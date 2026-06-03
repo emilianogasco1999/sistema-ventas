@@ -45,6 +45,22 @@ switch ($accion) {
         ctrlDashboardStats();
         break;
     
+    // Roles
+    case 'crear_rol':
+        require_once __DIR__ . '/controllers/roles.php';
+        ctrlCrearRol();
+        break;
+        
+    case 'listar_roles':
+        require_once __DIR__ . '/controllers/roles.php';
+        ctrlListarRoles();
+        break;
+        
+    case 'editar_rol':
+        require_once __DIR__ . '/controllers/roles.php';
+        ctrlEditarRol();
+        break;
+    
     // Fallback
     default:
         echo json_encode([

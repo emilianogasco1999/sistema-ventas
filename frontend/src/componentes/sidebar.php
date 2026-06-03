@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Sidebar Component - Forrajería
  * 
@@ -11,33 +12,37 @@
  */
 
 // Obtener la ruta base desde la URL actual
-function getBaseUrl() {
+function getBaseUrl()
+{
     $scriptPath = $_SERVER['SCRIPT_NAME'];
-    
+
     // Eliminar el nombre del archivo actual
     // Queda: /sistema-ventas/frontend/src/pages  (o /sistema-ventas/frontend/src/pages/config)
     $baseDir = dirname($scriptPath);
-    
+
     // Siempre devolver /sistema-ventas/frontend/src/pages como base
     // Esto funciona desde cualquier nivel (pages/ o pages/config/)
     return '/sistema-ventas/frontend/src/pages';
 }
 
-function getPageUrl($page) {
+function getPageUrl($page)
+{
     $base = getBaseUrl();
-    
+
     $pages = [
         'dashboard' => $base . '/dashboard.php',
         'config'    => $base . '/config/index.php',
+        'roles'     => $base . '/config/roles.php',
     ];
-    
+
     return $pages[$page] ?? $base . '/' . $page . '.php';
 }
 
-function renderSidebar($activePage = '', $userRole = '') {
+function renderSidebar($activePage = '', $userRole = '')
+{
     $dashboardUrl = getPageUrl('dashboard');
     $configUrl = getPageUrl('config');
-    
+
     $menuItems = [
         [
             'id' => 'dashboard',
@@ -76,11 +81,11 @@ function renderSidebar($activePage = '', $userRole = '') {
             'href' => '#'
         ],
     ];
-    
+
     $itemsHtml = '';
     foreach ($menuItems as $item) {
         $isActive = ($activePage === $item['id']) ? 'active' : '';
-        
+
         // Si está activo, usar span en vez de link
         if ($isActive) {
             $itemsHtml .= <<<HTML
@@ -98,12 +103,12 @@ HTML;
 HTML;
         }
     }
-    
+
     // Sección de Configuración (solo para Administradores)
     $configSection = '';
     if ($userRole === 'Administrador') {
         $isActiveConfig = (strpos($activePage, 'config_') === 0) ? 'active' : '';
-        
+
         // Si está activo, usar span
         if ($isActiveConfig) {
             $configSection = <<<HTML
@@ -133,7 +138,7 @@ HTML;
 HTML;
         }
     }
-    
+
     return <<<HTML
         <!-- Overlay para móvil -->
         <div class="sidebar-overlay"></div>

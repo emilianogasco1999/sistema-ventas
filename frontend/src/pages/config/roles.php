@@ -124,11 +124,12 @@ require_once __DIR__ . '/../../componentes/header.php';
                                         <th class="py-3 px-4 font-semibold">Estado</th>
                                         <th class="py-3 px-4 font-semibold">Creado Por</th>
                                         <th class="py-3 px-4 font-semibold">Fecha de Creación</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaRoles" class="divide-y divide-gray-100 text-sm text-gray-700">
                                     <tr>
-                                        <td colspan="4" class="py-6 text-center text-gray-500">
+                                        <td colspan="5" class="py-6 text-center text-gray-500">
                                             <div class="flex flex-col items-center gap-2">
                                                 <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
                                                 Cargando roles...

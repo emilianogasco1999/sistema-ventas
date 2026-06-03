@@ -26,7 +26,10 @@ CREATE TABLE IF NOT EXISTS sucursales (
 -- Roles
 CREATE TABLE IF NOT EXISTS roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(50) NOT NULL UNIQUE
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creador_id INT NULL,
+    activo BOOLEAN DEFAULT TRUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Personas
@@ -328,3 +331,8 @@ INSERT IGNORE INTO sizes (nombre) VALUES
 ('Mediano'),
 ('Grande'),
 ('Gigante');
+
+-- Restricciones adicionales post-creación
+ALTER TABLE roles 
+ADD CONSTRAINT fk_roles_usuario_creador
+FOREIGN KEY (usuario_creador_id) REFERENCES usuarios(id);

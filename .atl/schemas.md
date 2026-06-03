@@ -58,6 +58,9 @@ Table roles {
 id int [pk, increment]
 
 nombre varchar [not null, unique]
+created_at timestamp [default: `now()`]
+usuario_creador_id int [ref: > usuarios.id]
+activo boolean [default: true]
 }
 
 Table personas {

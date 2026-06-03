@@ -123,18 +123,23 @@ body.dark .quick-action-btn:hover {
 body.dark .bg-blue-100 {
 	background-color: #1e3a5f !important;
 }
+
 body.dark .bg-green-100 {
 	background-color: #064e3b !important;
 }
+
 body.dark .bg-purple-100 {
 	background-color: #3b0764 !important;
 }
+
 body.dark .bg-red-100 {
 	background-color: #7f1d1d !important;
 }
+
 body.dark .bg-yellow-100 {
 	background-color: #78350f !important;
 }
+
 body.dark .bg-pink-100 {
 	background-color: #831843 !important;
 }
@@ -143,18 +148,23 @@ body.dark .bg-pink-100 {
 body.dark .text-blue-600 {
 	color: #60a5fa !important;
 }
+
 body.dark .text-green-600 {
 	color: #4ade80 !important;
 }
+
 body.dark .text-purple-600 {
 	color: #c084fc !important;
 }
+
 body.dark .text-red-600 {
 	color: #f87171 !important;
 }
+
 body.dark .text-yellow-600 {
 	color: #fbbf24 !important;
 }
+
 body.dark .text-pink-600 {
 	color: #f472b6 !important;
 }
@@ -271,18 +281,23 @@ body.dark .config-card p.text-gray-500 {
 body.dark .config-card:hover .bg-blue-100 {
 	background-color: #1e40af !important;
 }
+
 body.dark .config-card:hover .bg-purple-100 {
 	background-color: #6b21a8 !important;
 }
+
 body.dark .config-card:hover .bg-green-100 {
 	background-color: #065f46 !important;
 }
+
 body.dark .config-card:hover .bg-yellow-100 {
 	background-color: #a16207 !important;
 }
+
 body.dark .config-card:hover .bg-pink-100 {
 	background-color: #9d174d !important;
 }
+
 body.dark .config-card:hover .bg-red-100 {
 	background-color: #991b1b !important;
 }
@@ -306,4 +321,16 @@ body.dark .bg-gradient-to-br.from-green-500.to-green-600 {
 		background-color: #111827;
 		color: #e5e7eb;
 	}
+}
+
+/* Inputs, select y textarea en modo oscuro con fondo blanco */
+body.dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+body.dark select,
+body.dark textarea {
+	color: #111827 !important;
+}
+
+/* Hover de filas en tablas en modo oscuro */
+body.dark tr:hover {
+	background-color: #374151 !important;
 }

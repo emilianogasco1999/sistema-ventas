@@ -1,0 +1,17 @@
+# Denegar acceso directo a backend excepto API
+RewriteEngine On
+
+# Permitir solo API desde el frontend (con REFERER)
+# O desde localhost (desarrollo)
+
+# Bloquear acceso directo a archivos PHP
+RewriteCond %{REQUEST_URI} ^/sistema-ventas/backend/.*\.php$ [NC]
+RewriteCond %{REQUEST_URI} !^/sistema-ventas/backend/api\.php$ [NC]
+RewriteRule ^.*$ - [F,L]
+
+# Redirigir cualquier intento de acceder a backend/index al login
+RewriteCond %{REQUEST_URI} ^/sistema-ventas/backend/?$ [OR]
+RewriteCond %{REQUEST_URI} ^/sistema-ventas/backend/index\.php$ [NC]
+RewriteRule ^.*$ /sistema-ventas/frontend/src/pages/login.php [R=301,L]
+
+# Options -deny all

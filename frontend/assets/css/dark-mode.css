@@ -1,0 +1,309 @@
+/* ========================================
+   DARK MODE - Clean Implementation
+   ======================================== */
+
+/* Transición suave para todos los elementos */
+body,
+body * {
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+/* Evitar transición en elementos que no deben animarse */
+input,
+button,
+select,
+textarea {
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease,
+		border-color 0.15s ease,
+		box-shadow 0.15s ease,
+		transform 0.1s ease;
+}
+
+/* ========================================
+   BASE COLORS (Light Mode)
+   ======================================== */
+
+body {
+	background-color: #f3f4f6;
+	color: #111827;
+}
+
+/* ========================================
+   DARK MODE COLORS
+   ======================================== */
+
+body.dark {
+	background-color: #111827;
+	color: #e5e7eb;
+}
+
+/* Fondos principales */
+body.dark .bg-white,
+body.dark .bg-gray-100 {
+	background-color: #1f2937 !important;
+}
+
+body.dark .bg-gray-50 {
+	background-color: #1a1a2e !important;
+}
+
+/* Bordes */
+body.dark .border-gray-100,
+body.dark .border-gray-200,
+body.dark .border-gray-300 {
+	border-color: #374151 !important;
+}
+
+body.dark .border-green-600 {
+	border-color: #065f46 !important;
+}
+
+/* Textos */
+body.dark .text-gray-800,
+body.dark .text-gray-700,
+body.dark .text-gray-600 {
+	color: #e5e7eb !important;
+}
+
+body.dark .text-gray-500 {
+	color: #9ca3af !important;
+}
+
+body.dark .text-gray-400 {
+	color: #6b7280 !important;
+}
+
+/* Elementos específicos del header */
+body.dark .dashboard-header {
+	background-color: #1f2937 !important;
+	border-color: #374151 !important;
+}
+
+/* Sidebar */
+body.dark .sidebar-container {
+	background: linear-gradient(180deg, #1f2937 0%, #111827 100%) !important;
+}
+
+body.dark .border-green-600 {
+	border-color: #064e3b !important;
+}
+
+body.dark .border-green-700 {
+	border-color: #065f46 !important;
+}
+
+body.dark .text-green-200 {
+	color: #6b7280 !important;
+}
+
+/* Cards */
+body.dark .stat-card,
+body.dark .config-card,
+body.dark .bg-white.rounded-xl {
+	background-color: #1f2937 !important;
+	border-color: #374151 !important;
+}
+
+/* Quick action buttons */
+body.dark .quick-action-btn {
+	background-color: #374151 !important;
+}
+
+body.dark .quick-action-btn:hover {
+	background-color: #4b5563 !important;
+}
+
+/* Stat icons backgrounds */
+body.dark .bg-blue-100 {
+	background-color: #1e3a5f !important;
+}
+body.dark .bg-green-100 {
+	background-color: #064e3b !important;
+}
+body.dark .bg-purple-100 {
+	background-color: #3b0764 !important;
+}
+body.dark .bg-red-100 {
+	background-color: #7f1d1d !important;
+}
+body.dark .bg-yellow-100 {
+	background-color: #78350f !important;
+}
+body.dark .bg-pink-100 {
+	background-color: #831843 !important;
+}
+
+/* Stat icon colors */
+body.dark .text-blue-600 {
+	color: #60a5fa !important;
+}
+body.dark .text-green-600 {
+	color: #4ade80 !important;
+}
+body.dark .text-purple-600 {
+	color: #c084fc !important;
+}
+body.dark .text-red-600 {
+	color: #f87171 !important;
+}
+body.dark .text-yellow-600 {
+	color: #fbbf24 !important;
+}
+body.dark .text-pink-600 {
+	color: #f472b6 !important;
+}
+
+/* User avatar */
+body.dark .user-avatar {
+	background-color: #374151 !important;
+}
+
+body.dark .text-green-600 {
+	color: #9ca3af !important;
+}
+
+/* ========================================
+   DARK MODE TOGGLE BUTTON
+   ======================================== */
+
+.dark-toggle-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: #374151;
+	border-radius: 8px;
+	transition:
+		background 0.2s,
+		color 0.2s;
+}
+
+.dark-toggle-btn:hover {
+	background: #f3f4f6;
+}
+
+body.dark .dark-toggle-btn {
+	color: #d1d5db;
+}
+
+body.dark .dark-toggle-btn:hover {
+	background: #374151;
+}
+
+/* Iconos del toggle */
+.dark-toggle-btn .icon-sun {
+	color: #f59e0b;
+}
+
+.dark-toggle-btn .icon-moon {
+	color: #6b7280;
+}
+
+body.dark .dark-toggle-btn .icon-sun {
+	color: #fbbf24;
+}
+
+body.dark .dark-toggle-btn .icon-moon {
+	color: #e5e7eb;
+}
+
+/* ========================================
+   RESPONSIVE SIDEBAR (Dark Mode)
+   ======================================== */
+
+body.dark .sidebar-overlay {
+	background: rgba(0, 0, 0, 0.75);
+}
+
+body.dark .sidebar-close-btn:hover {
+	background: #374151 !important;
+}
+
+body.dark .menu-toggle-btn {
+	color: #d1d5db;
+}
+
+body.dark .menu-toggle-btn:hover {
+	background: #374151;
+	color: #fff;
+}
+
+/* ========================================
+   LOGIN PAGE
+   ======================================== */
+
+body.dark .login-page {
+	background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+/* ========================================
+   CONFIG CARDS (Dark Mode)
+   ======================================== */
+
+body.dark .config-card:hover {
+	border-color: #059669 !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+body.dark .config-card h3 {
+	color: #e5e7eb !important;
+}
+
+body.dark .config-card p.text-gray-600 {
+	color: #9ca3af !important;
+}
+
+body.dark .config-card p.text-gray-500 {
+	color: #6b7280 !important;
+}
+
+/* Group hover en iconos */
+body.dark .config-card:hover .bg-blue-100 {
+	background-color: #1e40af !important;
+}
+body.dark .config-card:hover .bg-purple-100 {
+	background-color: #6b21a8 !important;
+}
+body.dark .config-card:hover .bg-green-100 {
+	background-color: #065f46 !important;
+}
+body.dark .config-card:hover .bg-yellow-100 {
+	background-color: #a16207 !important;
+}
+body.dark .config-card:hover .bg-pink-100 {
+	background-color: #9d174d !important;
+}
+body.dark .config-card:hover .bg-red-100 {
+	background-color: #991b1b !important;
+}
+
+/* Info box */
+body.dark .bg-blue-100.bg-opacity-50 {
+	background-color: #1e3a5f !important;
+}
+
+body.dark .bg-gradient-to-br.from-green-500.to-green-600 {
+	background: linear-gradient(135deg, #065f46 0%, #047857 100%) !important;
+}
+
+/* ========================================
+   PREVENIR FLASH AL CARGAR
+   ======================================== */
+
+/* Aplicar estado oscuro antes de que JS cargue */
+@media (prefers-color-scheme: dark) {
+	body.auto-detect-dark {
+		background-color: #111827;
+		color: #e5e7eb;
+	}
+}

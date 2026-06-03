@@ -1,0 +1,123 @@
+/**
+ * Dashboard Page Styles - Forrajería
+ *
+ * Estilos específicos para la página del dashboard.
+ */
+
+/* ========================================
+   ANIMACIONES
+   ======================================== */
+
+.fade-in {
+	animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* ========================================
+   SIDEBAR
+   ======================================== */
+
+.sidebar-link {
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease;
+}
+
+.sidebar-link:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-link.active {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   STAT CARDS
+   ======================================== */
+
+.stat-card {
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body.dark .stat-card {
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+body.dark .stat-card:hover {
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ========================================
+   QUICK ACTIONS
+   ======================================== */
+
+.quick-action-btn {
+	transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+	transform: scale(1.02);
+}
+
+body.dark .quick-action-btn:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+.dashboard-header {
+	background-color: #ffffff;
+	border-bottom: 1px solid #e5e7eb;
+}
+
+body.dark .dashboard-header {
+	background-color: #1f2937;
+	border-bottom-color: #374151;
+}
+
+/* ========================================
+   USER AVATAR
+   ======================================== */
+
+.user-avatar {
+	background-color: #dcfce7;
+}
+
+body.dark .user-avatar {
+	background-color: #065f46;
+}
+
+body.dark .user-avatar i {
+	color: #86efac !important;
+}
+
+/* ========================================
+   LOGOUT BUTTON
+   ======================================== */
+
+#btnLogout {
+	transition: background-color 0.2s ease;
+}
+
+#btnLogout:hover {
+	background-color: rgba(220, 38, 38, 0.9);
+}

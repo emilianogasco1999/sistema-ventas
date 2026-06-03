@@ -1,0 +1,37 @@
+# ========================================
+# Sistema Ventas - Forraquería
+# ========================================
+
+# No subir config local con credenciales
+.env
+.env.local
+.env.*.local
+
+# Pi/Agent - subir config compartida pero no logs/temp
+# .atl/
+.atl/skill-registry.md
+.atl/.skill-registry.cache.json
+!.atl/config.yaml
+!.atl/openspec/
+
+# Logs y temporales
+logs/
+temp/
+*.log
+
+# Node (si usás)
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/

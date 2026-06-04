@@ -354,7 +354,7 @@ $(document).ready(() => {
 					actualizarIndicadorOrden();
 				}
 			},
-			error: () => {
+			error: (xhr) => {
 				$tabla.html(`
                     <tr>
                         <td colspan="8" class="py-6 text-center text-red-500">

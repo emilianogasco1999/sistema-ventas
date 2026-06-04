@@ -87,3 +87,38 @@ function dbActualizarRol($id, $nombre, $activo) {
     ]);
 }
 
+/**
+ * Busca un rol por su ID
+ * @param int $id
+ * @return array|null
+ */
+function dbBuscarRolPorId($id) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("SELECT * FROM roles WHERE id = :id LIMIT 1");
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch() ?: null;
+}
+
+/**
+ * Cuenta la cantidad de usuarios asociados a un rol específico
+ * @param int $roleId
+ * @return int
+ */
+function dbContarUsuariosConRol($roleId) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("SELECT COUNT(*) FROM usuarios WHERE role_id = :role_id");
+    $stmt->execute(['role_id' => $roleId]);
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * Elimina un rol físicamente de la base de datos
+ * @param int $id
+ * @return bool
+ */
+function dbEliminarRol($id) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("DELETE FROM roles WHERE id = :id");
+    return $stmt->execute(['id' => $id]);
+}
+

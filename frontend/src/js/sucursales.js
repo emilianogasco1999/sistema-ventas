@@ -1,7 +1,7 @@
 /**
  * Gestión de Sucursales - JavaScript
  *
- * Maneja la creación y listado de sucursales via API.
+ * Maneja la creación, listado con paginación, búsqueda y filtros de sucursales.
  */
 
 $(document).ready(() => {
@@ -13,11 +13,27 @@ $(document).ready(() => {
 	// Elementos del DOM
 	const $form = $("#formSucursal");
 	const $tabla = $("#tablaSucursales");
+	const $searchInput = $("#searchInput");
+	const $estadoFilter = $("#estadoFilter");
+	const $paginationControls = $("#paginationControls");
+	const $infoRegistros = $("#infoRegistros");
+	const $paginas = $("#paginas");
 
 	// API base
 	const API_BASE = "../../../../backend/api.php";
 
+	// Estado de la tabla
+	const estado = {
+		search: "",
+		estado: "todas",
+		sort: "nombre",
+		order: "ASC",
+		page: 1,
+		per_page: 10,
+	};
+
 	let formValidator = null;
+	let debounceTimer = null;
 
 	// ========================================
 	// VALIDACIÓN PERSONALIZADA
@@ -157,7 +173,7 @@ $(document).ready(() => {
 	}
 
 	// ========================================
-	// ENVÍO A LA API
+	// ENVÍO A LA API (CREAR)
 	// ========================================
 
 	function enviarFormulario(datos) {
@@ -168,7 +184,7 @@ $(document).ready(() => {
 			data: JSON.stringify(datos),
 			success: (respuesta) => {
 				if (respuesta.success) {
-					// Recargar listado inmediatamente para reflejar cambios en segundo plano
+					// Recargar listado con el estado actual
 					cargarSucursales();
 
 					Swal.fire({
@@ -217,23 +233,46 @@ $(document).ready(() => {
 	}
 
 	// ========================================
-	// LISTADO DE SUCURSALES
+	// LISTADO CON PAGINACIÓN Y FILTROS
 	// ========================================
 
 	function cargarSucursales() {
+		// Mostrar loader en la tabla
+		$tabla.html(`
+            <tr>
+                <td colspan="7" class="py-6 text-center text-gray-500">
+                    <div class="flex flex-col items-center gap-2">
+                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
+                        Cargando sucursales...
+                    </div>
+                </td>
+            </tr>
+        `);
+		lucide.createIcons();
+
 		$.ajax({
 			url: API_BASE,
 			type: "GET",
-			data: { accion: "listar_sucursales" },
+			data: {
+				accion: "listar_sucursales",
+				search: estado.search,
+				estado: estado.estado,
+				sort: estado.sort,
+				order: estado.order,
+				page: estado.page,
+				per_page: estado.per_page,
+			},
 			success: (respuesta) => {
 				if (respuesta.success && respuesta.data) {
 					renderizarSucursales(respuesta.data);
+					renderizarPaginacion(respuesta.pagination);
+					actualizarIndicadorOrden();
 				}
 			},
-			error: () => {
+			error: (xhr) => {
 				$tabla.html(`
                     <tr>
-                        <td colspan="6" class="py-6 text-center text-red-500">
+                        <td colspan="7" class="py-6 text-center text-red-500">
                             <div class="flex flex-col items-center gap-2">
                                 <i data-lucide="alert-circle" class="w-6 h-6"></i>
                                 Error al cargar las sucursales
@@ -243,6 +282,10 @@ $(document).ready(() => {
                 `);
 				lucide.createIcons();
 			},
+			complete: () => {
+				// Quitar spinner de búsqueda
+				$searchInput.closest(".relative").removeClass("searching");
+			},
 		});
 	}
 
@@ -250,12 +293,12 @@ $(document).ready(() => {
 		if (!sucursales || sucursales.length === 0) {
 			$tabla.html(`
                 <tr>
-                    <td colspan="6" class="py-6 text-center text-gray-500">
+                    <td colspan="7" class="py-6 text-center text-gray-500">
                         <div class="flex flex-col items-center gap-2">
                             <i data-lucide="package-x" class="w-6 h-6"></i>
-                            No hay sucursales registradas
+                            No hay sucursales que coincidan con los filtros
                         </div>
-                    </td>
+                    </tr>
                 </tr>
             `);
 			lucide.createIcons();
@@ -279,10 +322,11 @@ $(document).ready(() => {
 
 			html += `
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <td class="py-3 px-4">${sucursal.id}</td>
                     <td class="py-3 px-4 font-medium">${escapeHtml(sucursal.nombre)}</td>
-                    <td class="py-3 px-4">${sucursal.direccion || '<span class="text-gray-400">—</span>'}</td>
-                    <td class="py-3 px-4">${sucursal.telefono || '<span class="text-gray-400">—</span>'}</td>
-                    <td class="py-3 px-4">${sucursal.email || '<span class="text-gray-400">—</span>'}</td>
+                    <td class="py-3 px-4">${sucursal.direccion ? escapeHtml(sucursal.direccion) : '<span class="text-gray-400">—</span>'}</td>
+                    <td class="py-3 px-4">${sucursal.telefono ? escapeHtml(sucursal.telefono) : '<span class="text-gray-400">—</span>'}</td>
+                    <td class="py-3 px-4">${sucursal.email ? escapeHtml(sucursal.email) : '<span class="text-gray-400">—</span>'}</td>
                     <td class="py-3 px-4">${estadoBadge}</td>
                     <td class="py-3 px-4">${fechaCreacion}</td>
                 </tr>
@@ -290,6 +334,140 @@ $(document).ready(() => {
 		});
 
 		$tabla.html(html);
+		lucide.createIcons();
+	}
+
+	function renderizarPaginacion(pagination) {
+		if (!pagination) return;
+
+		const { total, page, per_page, total_pages } = pagination;
+		const inicio = (page - 1) * per_page + 1;
+		const fin = Math.min(page * per_page, total);
+
+		// Info de registros
+		if (total === 0) {
+			$infoRegistros.text("No hay registros");
+		} else {
+			$infoRegistros.text(`Mostrando ${inicio}-${fin} de ${total} registros`);
+		}
+
+		// Botones de paginación
+		$paginas.empty();
+
+		if (total_pages <= 1) {
+			return; // No mostrar paginación si hay una sola página
+		}
+
+		const maxBotones = 5;
+		let startPage = Math.max(1, page - Math.floor(maxBotones / 2));
+		const endPage = Math.min(total_pages, startPage + maxBotones - 1);
+
+		if (endPage - startPage < maxBotones - 1) {
+			startPage = Math.max(1, endPage - maxBotones + 1);
+		}
+
+		// Botón anterior
+		const prevDisabled =
+			page <= 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-green-100";
+		$paginas.append(`
+            <button class="px-3 py-1 rounded border border-gray-300 text-sm ${prevDisabled}" data-page="${page - 1}" ${page <= 1 ? "disabled" : ""}>
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+        `);
+
+		// Botones de páginas
+		for (let i = startPage; i <= endPage; i++) {
+			const activeClass =
+				i === page
+					? "bg-green-600 text-white border-green-600"
+					: "border-gray-300 hover:bg-green-100";
+			$paginas.append(`
+                <button class="px-3 py-1 rounded border text-sm ${activeClass}" data-page="${i}">
+                    ${i}
+                </button>
+            `);
+		}
+
+		// Botón siguiente
+		const nextDisabled =
+			page >= total_pages
+				? "opacity-50 cursor-not-allowed"
+				: "hover:bg-green-100";
+		$paginas.append(`
+            <button class="px-3 py-1 rounded border border-gray-300 text-sm ${nextDisabled}" data-page="${page + 1}" ${page >= total_pages ? "disabled" : ""}>
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+        `);
+
+		lucide.createIcons();
+	}
+
+	// ========================================
+	// EVENTOS DE CONTROLES
+	// ========================================
+
+	// Búsqueda con debounce
+	$searchInput.on("input", () => {
+		clearTimeout(debounceTimer);
+		$searchInput.closest(".relative").addClass("searching");
+
+		debounceTimer = setTimeout(() => {
+			estado.search = $searchInput.val().trim();
+			estado.page = 1; // Reset a página 1 en nueva búsqueda
+			cargarSucursales();
+		}, 400);
+	});
+
+	// Filtro por estado
+	$estadoFilter.on("change", () => {
+		estado.estado = $estadoFilter.val();
+		estado.page = 1;
+		cargarSucursales();
+	});
+
+	// Ordenamiento por columnas
+	$tabla
+		.closest(".overflow-x-auto")
+		.find("th.sortable")
+		.on("click", function () {
+			const $th = $(this);
+			const column = $th.data("sort");
+
+			if (!column) return;
+
+			// Toggle orden
+			if (estado.sort === column) {
+				estado.order = estado.order === "ASC" ? "DESC" : "ASC";
+			} else {
+				estado.sort = column;
+				estado.order = "ASC";
+			}
+
+			estado.page = 1;
+			cargarSucursales();
+		});
+
+	// Paginación (delegated events)
+	$paginas.on("click", "button[data-page]", function () {
+		const newPage = parseInt($(this).data("page"));
+		if (!isNaN(newPage) && newPage > 0) {
+			estado.page = newPage;
+			cargarSucursales();
+		}
+	});
+
+	// Actualizar indicador visual de orden
+	function actualizarIndicadorOrden() {
+		$("th.sortable").removeClass("asc desc");
+		$(`th.sortable[data-sort="${estado.sort}"]`).addClass(
+			estado.order.toLowerCase(),
+		);
+
+		// Cambiar icono según dirección
+		$(`th.sortable[data-sort="${estado.sort}"] .sort-icon i`).attr(
+			"data-lucide",
+			estado.order === "ASC" ? "chevron-up" : "chevron-down",
+		);
 		lucide.createIcons();
 	}
 

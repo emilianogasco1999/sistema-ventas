@@ -63,5 +63,69 @@ function initResponsiveSidebar() {
 	});
 }
 
-// Inicializar cuando el DOM esté listo
-document.addEventListener("DOMContentLoaded", initResponsiveSidebar);
+/**
+ * Inicializa el manejador global para el botón de Cerrar Sesión
+ */
+function initGlobalLogout() {
+	const btnLogout = document.getElementById("btnLogout");
+	if (!btnLogout) return;
+
+	btnLogout.addEventListener("click", (e) => {
+		e.preventDefault();
+
+		// Determinar si estamos en una página de configuración para ajustar rutas relativas
+		const isConfigPage = window.location.pathname.includes('/config/');
+		const apiPath = isConfigPage ? '../../../../backend/api.php?accion=logout' : '../../../backend/api.php?accion=logout';
+		const loginPath = isConfigPage ? '../login.php' : 'login.php';
+
+		if (typeof Swal !== "undefined") {
+			const isDark = document.body.classList.contains("dark");
+			Swal.fire({
+				title: "¿Cerrar sesión?",
+				icon: "question",
+				showCancelButton: true,
+				confirmButtonColor: "#dc2626",
+				cancelButtonColor: "#6b7280",
+				confirmButtonText: "Sí, cerrar",
+				cancelButtonText: "Cancelar",
+				background: isDark ? "#1f2937" : "#ffffff",
+				color: isDark ? "#f3f4f6" : "#1f2937",
+			}).then((result) => {
+				if (result.isConfirmed) {
+					ejecutarLogout(apiPath, loginPath);
+				}
+			});
+		} else {
+			if (confirm("¿Estás seguro de que querés cerrar sesión?")) {
+				ejecutarLogout(apiPath, loginPath);
+			}
+		}
+	});
+}
+
+function ejecutarLogout(apiPath, loginPath) {
+	// Usar fetch para no depender de jQuery si no está disponible
+	fetch(apiPath, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+		}
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.success) {
+			window.location.href = loginPath;
+		} else {
+			alert(data.error || "Ocurrió un error al cerrar sesión.");
+		}
+	})
+	.catch(() => {
+		alert("Error de red al intentar cerrar sesión.");
+	});
+}
+
+// Inicializar componentes cuando el DOM esté listo
+document.addEventListener("DOMContentLoaded", () => {
+	initResponsiveSidebar();
+	initGlobalLogout();
+});

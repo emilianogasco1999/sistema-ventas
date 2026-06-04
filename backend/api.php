@@ -66,6 +66,17 @@ switch ($accion) {
         ctrlEliminarRol();
         break;
     
+    // Sucursales
+    case 'crear_sucursal':
+        require_once __DIR__ . '/controllers/sucursal.php';
+        ctrlCrearSucursal();
+        break;
+    
+    case 'listar_sucursales':
+        require_once __DIR__ . '/controllers/sucursal.php';
+        ctrlListarSucursales();
+        break;
+    
     // Fallback
     default:
         echo json_encode([

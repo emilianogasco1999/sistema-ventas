@@ -1,9 +1,9 @@
 <?php
 /**
- * Gestión de Roles - Forrajería
+ * Gestión de Sucursales - Forrajería
  * 
- * Módulo para listar y crear nuevos roles en el sistema.
- * Solo accesible para Administradores.
+ * Módulo para listar y crear nuevas sucursales en el sistema.
+ * Solo accesible para Super Admin.
  */
 
 // Iniciar sesión y verificar autenticación
@@ -17,8 +17,8 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 $userRole = $_SESSION['usuario_rol'] ?? '';
 $userName = $_SESSION['usuario_nombre'] ?? '';
 
-// Restringir acceso solo a Administradores y Super Admins
-if ($userRole !== 'Administrador' && $userRole !== 'Super Admin') {
+// Restringir acceso solo a Super Admin
+if (strtoupper($userRole) !== 'SUPER ADMIN') {
     header('Location: ../dashboard.php');
     exit;
 }
@@ -32,7 +32,7 @@ require_once __DIR__ . '/../../componentes/header.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roles - Forrajería</title>
+    <title>Sucursales - Forraiería</title>
     <!-- Assets locales -->
     <link rel="stylesheet" href="../../../assets/css/tailwind.min.css">
     <link rel="stylesheet" href="../../../assets/css/dark-mode.css">
@@ -64,12 +64,12 @@ require_once __DIR__ . '/../../componentes/header.php';
 <body class="bg-gray-100">
     <div class="flex min-h-screen dashboard-layout">
         <!-- Sidebar -->
-        <?= renderSidebar('config_roles', $userRole); ?>
+        <?= renderSidebar('config_sucursales', $userRole); ?>
         
         <!-- Contenido principal -->
         <main class="flex-1 flex flex-col">
             <!-- Header -->
-            <?= renderHeader('Roles', 'Gestión de roles y permisos de acceso', $userName, $userRole); ?>
+            <?= renderHeader('Sucursales', 'Gestión de sucursales del sistema', $userName, $userRole); ?>
             
             <!-- Contenido -->
             <div class="flex-1 p-6 overflow-auto">
@@ -84,36 +84,66 @@ require_once __DIR__ . '/../../componentes/header.php';
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
-                    <!-- Formulario de creación de rol -->
+                    <!-- Formulario de creación de sucursal -->
                     <div class="lg:col-span-1 bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-fit">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <i data-lucide="plus-circle" class="w-5 h-5 text-green-600"></i>
-                            Crear Nuevo Rol
+                            <i data-lucide="building-2" class="w-5 h-5 text-green-600"></i>
+                            Nueva Sucursal
                         </h3>
                         
-                        <form id="formRol" novalidate>
+                        <form id="formSucursal" novalidate>
                             <div class="mb-4 form-group">
-                                <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Rol *</label>
+                                <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
                                 <input type="text" 
                                        name="nombre" 
                                        id="nombre" 
-                                       placeholder="Ej. Supervisor, Auditor" 
+                                       placeholder="Ej. Casa Central, Sucursal Norte" 
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
-                                       data-rules="required|minLength:3|maxLength:50">
+                                       data-rules="required|minLength:2|maxLength:100">
+                            </div>
+
+                            <div class="mb-4 form-group">
+                                <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                <input type="text" 
+                                       name="direccion" 
+                                       id="direccion" 
+                                       placeholder="Ej. Av. Belgrano 123" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                                       data-rules="maxLength:200">
+                            </div>
+
+                            <div class="mb-4 form-group">
+                                <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                <input type="text" 
+                                       name="telefono" 
+                                       id="telefono" 
+                                       placeholder="Ej. 3815551234" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                                       data-rules="phone">
+                            </div>
+
+                            <div class="mb-4 form-group">
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input type="email" 
+                                       name="email" 
+                                       id="email" 
+                                       placeholder="Ej. central@empresa.com" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                                       data-rules="email">
                             </div>
                             
                             <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
                                 <i data-lucide="save" class="w-5 h-5"></i>
-                                Guardar Rol
+                                Guardar Sucursal
                             </button>
                         </form>
                     </div>
                     
-                    <!-- Listado de roles -->
+                    <!-- Listado de sucursales -->
                     <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <i data-lucide="shield" class="w-5 h-5 text-green-600"></i>
-                            Roles Registrados
+                            <i data-lucide="store" class="w-5 h-5 text-green-600"></i>
+                            Sucursales Registradas
                         </h3>
                         
                         <div class="overflow-x-auto">
@@ -121,18 +151,19 @@ require_once __DIR__ . '/../../componentes/header.php';
                                 <thead>
                                     <tr class="border-b border-gray-200 text-gray-500 text-sm">
                                         <th class="py-3 px-4 font-semibold">Nombre</th>
+                                        <th class="py-3 px-4 font-semibold">Dirección</th>
+                                        <th class="py-3 px-4 font-semibold">Teléfono</th>
+                                        <th class="py-3 px-4 font-semibold">Email</th>
                                         <th class="py-3 px-4 font-semibold">Estado</th>
-                                        <th class="py-3 px-4 font-semibold">Creado Por</th>
                                         <th class="py-3 px-4 font-semibold">Fecha de Creación</th>
-                                        <th class="py-3 px-4 font-semibold text-center">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tablaRoles" class="divide-y divide-gray-100 text-sm text-gray-700">
+                                <tbody id="tablaSucursales" class="divide-y divide-gray-100 text-sm text-gray-700">
                                     <tr>
-                                        <td colspan="5" class="py-6 text-center text-gray-500">
+                                        <td colspan="6" class="py-6 text-center text-gray-500">
                                             <div class="flex flex-col items-center gap-2">
                                                 <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
-                                                Cargando roles...
+                                                Cargando sucursales...
                                             </div>
                                         </td>
                                     </tr>
@@ -152,6 +183,6 @@ require_once __DIR__ . '/../../componentes/header.php';
     <script src="../../../assets/js/dark-mode-toggle.js"></script>
     <script src="../../../assets/js/responsive-sidebar.js"></script>
     <script src="../../js/validation.js"></script>
-    <script src="../../js/roles.js"></script>
+    <script src="../../js/sucursales.js"></script>
 </body>
 </html>

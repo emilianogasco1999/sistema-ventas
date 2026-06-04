@@ -134,3 +134,65 @@ function dbExisteSucursalPorNombre($nombre) {
     $stmt->execute(['nombre' => $nombre]);
     return (int)$stmt->fetchColumn() > 0;
 }
+
+/**
+ * Verifica si ya existe una sucursal con el mismo nombre, excluyendo una ID
+ * @param string $nombre
+ * @param int $excludeId ID a excluir de la búsqueda
+ * @return bool
+ */
+function dbExisteSucursalPorNombreExcluyendoId($nombre, $excludeId) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM sucursales 
+        WHERE LOWER(nombre) = LOWER(:nombre) AND id != :excludeId
+    ");
+    $stmt->execute(['nombre' => $nombre, 'excludeId' => $excludeId]);
+    return (int)$stmt->fetchColumn() > 0;
+}
+
+/**
+ * Actualiza una sucursal existente
+ * @param int $id
+ * @param array $datos Campos a actualizar: nombre, direccion, telefono, email, activa
+ * @return bool
+ */
+function dbActualizarSucursal($id, $datos) {
+    $db = obtenerConexion();
+    
+    $campos = [];
+    $bindings = ['id' => $id];
+    
+    if (array_key_exists('nombre', $datos)) {
+        $campos[] = 'nombre = :nombre';
+        $bindings['nombre'] = $datos['nombre'];
+    }
+    
+    if (array_key_exists('direccion', $datos)) {
+        $campos[] = 'direccion = :direccion';
+        $bindings['direccion'] = $datos['direccion'];
+    }
+    
+    if (array_key_exists('telefono', $datos)) {
+        $campos[] = 'telefono = :telefono';
+        $bindings['telefono'] = $datos['telefono'];
+    }
+    
+    if (array_key_exists('email', $datos)) {
+        $campos[] = 'email = :email';
+        $bindings['email'] = $datos['email'];
+    }
+    
+    if (array_key_exists('activa', $datos)) {
+        $campos[] = 'activa = :activa';
+        $bindings['activa'] = $datos['activa'] ? 1 : 0;
+    }
+    
+    if (empty($campos)) {
+        return false; // No hay campos para actualizar
+    }
+    
+    $sql = "UPDATE sucursales SET " . implode(', ', $campos) . " WHERE id = :id";
+    $stmt = $db->prepare($sql);
+    return $stmt->execute($bindings);
+}

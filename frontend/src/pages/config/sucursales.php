@@ -213,6 +213,7 @@ require_once __DIR__ . '/../../componentes/header.php';
                                                 </span>
                                             </span>
                                         </th>
+                                        <th class="py-3 px-4 font-semibold text-center">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaSucursales" class="divide-y divide-gray-100 text-sm text-gray-700">
@@ -251,5 +252,80 @@ require_once __DIR__ . '/../../componentes/header.php';
     <script src="../../../assets/js/responsive-sidebar.js"></script>
     <script src="../../js/validation.js"></script>
     <script src="../../js/sucursales.js"></script>
+    
+    <!-- Modal Editar Sucursal -->
+    <div id="modalEditarSucursal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <i data-lucide="edit-3" class="w-5 h-5 text-green-600"></i>
+                        Editar Sucursal
+                    </h3>
+                    <button type="button" id="btnCerrarModal" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
+            </div>
+            <form id="formEditarSucursal" class="p-6">
+                <input type="hidden" id="editId" name="id">
+                
+                <div class="mb-4 form-group">
+                    <label for="editNombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                    <input type="text" 
+                           name="nombre" 
+                           id="editNombre" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                           data-rules="required|minLength:2|maxLength:100">
+                </div>
+
+                <div class="mb-4 form-group">
+                    <label for="editDireccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                    <input type="text" 
+                           name="direccion" 
+                           id="editDireccion" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all">
+                </div>
+
+                <div class="mb-4 form-group">
+                    <label for="editTelefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                    <input type="text" 
+                           name="telefono" 
+                           id="editTelefono" 
+                           placeholder="Solo números (8-15 dígitos)"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all">
+                </div>
+
+                <div class="mb-4 form-group">
+                    <label for="editEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" 
+                           name="email" 
+                           id="editEmail" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all">
+                </div>
+                
+                <div class="mb-6 form-group">
+                    <label for="editActiva" class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" 
+                               name="activa" 
+                               id="editActiva" 
+                               class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500">
+                        <span class="text-sm font-medium text-gray-700">Sucursal activa</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1 ml-8">Las sucursales inactivas no aparecerán en los listados principales.</p>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button type="button" id="btnCancelarEdicion" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-5 h-5"></i>
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

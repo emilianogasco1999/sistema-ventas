@@ -84,7 +84,7 @@ require_once __DIR__ . '/../../componentes/header.php';
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
-                    <!-- Formulario de creación de marcas -->
+                    <!-- Formulario de marcas -->
                     <div class="lg:col-span-1 bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-fit">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                             <i data-lucide="plus-circle" class="w-5 h-5 text-green-600"></i>
@@ -121,6 +121,7 @@ require_once __DIR__ . '/../../componentes/header.php';
                                 <thead>
                                     <tr class="border-b border-gray-200 text-gray-500 text-sm">
                                         <th class="py-3 px-4 font-semibold">Nombre</th>
+                                        <th class="py-3 px-4 font-semibold text-center w-24">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaMarcas" class="divide-y divide-gray-100 text-sm text-gray-700">

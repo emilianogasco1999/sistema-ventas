@@ -92,6 +92,16 @@ switch ($accion) {
         require_once __DIR__ . '/controllers/marcas.php';
         ctrlListarMarcas();
         break;
+        
+    case 'obtener_marca':
+        require_once __DIR__ . '/controllers/marcas.php';
+        ctrlObtenerMarca();
+        break;
+        
+    case 'actualizar_marca':
+        require_once __DIR__ . '/controllers/marcas.php';
+        ctrlActualizarMarca();
+        break;
     
     // Fallback
     default:

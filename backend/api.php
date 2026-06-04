@@ -60,6 +60,11 @@ switch ($accion) {
         require_once __DIR__ . '/controllers/roles.php';
         ctrlEditarRol();
         break;
+
+    case 'eliminar_rol':
+        require_once __DIR__ . '/controllers/roles.php';
+        ctrlEliminarRol();
+        break;
     
     // Fallback
     default:

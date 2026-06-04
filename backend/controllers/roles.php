@@ -204,3 +204,73 @@ function ctrlEditarRol() {
     exit;
 }
 
+/**
+ * Controlador para eliminar un rol (desactivación lógica)
+ */
+function ctrlEliminarRol() {
+    verificarAdminAutenticado();
+
+    // Leer datos del request (JSON o POST)
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input) {
+        $input = $_POST;
+    }
+    
+    $id = isset($input['id']) ? (int)$input['id'] : (isset($_GET['id']) ? (int)$_GET['id'] : 0);
+
+    // Validación de ID
+    if ($id <= 0) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'El ID del rol no es válido.'
+        ]);
+        exit;
+    }
+
+    // Escenario 3: Verificar que el rol exista
+    $rol = dbBuscarRolPorId($id);
+    if (!$rol) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'El rol no fue encontrado.'
+        ]);
+        exit;
+    }
+
+    // Impedir eliminar el Administrador principal por seguridad
+    if ($id === 1) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'No es posible eliminar el rol de Administrador principal por razones de seguridad.'
+        ]);
+        exit;
+    }
+
+    // Escenario 2: Verificar si tiene usuarios asociados
+    $cantUsuarios = dbContarUsuariosConRol($id);
+    if ($cantUsuarios > 0) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'No es posible eliminar el rol porque tiene usuarios asociados.'
+        ]);
+        exit;
+    }
+
+    // Escenario 1: Eliminar (marcar activo = 0)
+    $exito = dbEliminarRol($id);
+
+    if ($exito) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Rol eliminado exitosamente.'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'error' => 'No se pudo eliminar el rol.'
+        ]);
+    }
+    exit;
+}
+
+

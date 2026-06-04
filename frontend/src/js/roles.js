@@ -29,6 +29,14 @@ $(document).ready(() => {
 
         abrirModalEdicion(id, nombre, activo);
     });
+
+    // Manejar el click en el botón de eliminar
+    $(document).on("click", ".btn-eliminar-rol", function () {
+        const id = $(this).data("id");
+        const nombre = $(this).data("nombre");
+
+        confirmarEliminacionRol(id, nombre);
+    });
 });
 
 /**
@@ -74,13 +82,23 @@ function cargarRoles() {
                              Inactivo
                            </span>`;
 
+                    // Solo mostramos el botón de eliminar si no es el rol de Administrador principal (id = 1)
+                    const botonEliminar = rol.id == 1
+                        ? ''
+                        : `<button class="btn-eliminar-rol text-red-600 hover:text-red-800 transition-colors p-1" 
+                                   data-id="${rol.id}" 
+                                   data-nombre="${escapeHtml(rol.nombre)}"
+                                   title="Eliminar Rol">
+                               <i data-lucide="trash-2" class="w-4 h-4"></i>
+                           </button>`;
+
                     $tabla.append(`
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="py-3 px-4 font-medium text-gray-800">${escapeHtml(rol.nombre)}</td>
                             <td class="py-3 px-4">${badgeEstado}</td>
                             <td class="py-3 px-4 text-gray-500">${escapeHtml(creador)}</td>
                             <td class="py-3 px-4 text-gray-500">${fecha}</td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="py-3 px-4 text-center flex items-center justify-center gap-2">
                                 <button class="btn-editar-rol text-blue-600 hover:text-blue-800 transition-colors p-1" 
                                         data-id="${rol.id}" 
                                         data-nombre="${escapeHtml(rol.nombre)}" 
@@ -88,6 +106,7 @@ function cargarRoles() {
                                         title="Editar Rol">
                                     <i data-lucide="pencil" class="w-4 h-4"></i>
                                 </button>
+                                ${botonEliminar}
                             </td>
                         </tr>
                     `);
@@ -314,6 +333,64 @@ function actualizarRol(id, nombre, activo) {
         })
         .fail((xhr) => {
             const errorMsg = xhr.responseJSON?.error || "Error de red al intentar actualizar.";
+            mostrarError("Error del servidor", errorMsg);
+        });
+}
+
+/**
+ * Muestra el diálogo SweetAlert2 para confirmar la eliminación de un rol
+ */
+function confirmarEliminacionRol(id, nombre) {
+    const theme = obtenerSwalTheme();
+
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: `Vas a eliminar el rol "${nombre}". Esta acción no se puede deshacer si tiene dependencias en el futuro.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        background: theme.background,
+        color: theme.color
+    }).then((result) => {
+        if (result.isConfirmed) {
+            eliminarRol(id);
+        }
+    });
+}
+
+/**
+ * Envía la petición AJAX para eliminar lógicamente el rol
+ */
+function eliminarRol(id) {
+    $.ajax({
+        url: "../../../../backend/api.php?accion=eliminar_rol",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ id: id }),
+        dataType: "json"
+    })
+        .done((response) => {
+            if (response.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "¡Eliminado!",
+                    text: response.message || "Rol eliminado correctamente.",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    ...obtenerSwalTheme()
+                });
+
+                // Recargar la tabla
+                cargarRoles();
+            } else {
+                mostrarError("No se pudo eliminar el rol", response.error);
+            }
+        })
+        .fail((xhr) => {
+            const errorMsg = xhr.responseJSON?.error || "Error de red al intentar eliminar.";
             mostrarError("Error del servidor", errorMsg);
         });
 }

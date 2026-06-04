@@ -186,3 +186,132 @@ function ctrlListarSucursales() {
         ]);
     }
 }
+
+/**
+ * Controlador: Actualizar una sucursal existente
+ */
+function ctrlActualizarSucursal() {
+    // Verificar permisos
+    requerirSuperAdmin();
+    
+    // Obtener ID de la URL (query param)
+    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    
+    if ($id <= 0) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'ID de sucursal inválido'
+        ]);
+        exit;
+    }
+    
+    // Verificar que la sucursal existe
+    $sucursal = dbBuscarSucursalPorId($id);
+    if (!$sucursal) {
+        http_response_code(404);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Sucursal no encontrada'
+        ]);
+        exit;
+    }
+    
+    // Leer datos del request
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$input) {
+        $input = $_POST;
+    }
+    
+    // Obtener campos
+    $nombre = isset($input['nombre']) ? trim($input['nombre']) : null;
+    $direccion = isset($input['direccion']) ? trim($input['direccion']) : null;
+    $telefono = isset($input['telefono']) ? trim($input['telefono']) : null;
+    $email = isset($input['email']) ? trim($input['email']) : null;
+    $activa = isset($input['activa']) ? (bool)$input['activa'] : null;
+    
+    // ========================================
+    // VALIDACIONES
+    // ========================================
+    
+    // Nombre es obligatorio si se envía
+    if ($nombre !== null && empty($nombre)) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'El nombre es obligatorio'
+        ]);
+        exit;
+    }
+    
+    // Email válido (si se envía)
+    if ($email !== null && $email !== '' && !validarEmail($email)) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'El email no tiene un formato válido'
+        ]);
+        exit;
+    }
+    
+    // Teléfono válido (si se envía)
+    if ($telefono !== null && $telefono !== '' && !validarTelefono($telefono)) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'El teléfono debe contener solo números (8-15 dígitos)'
+        ]);
+        exit;
+    }
+    
+    // Verificar si ya existe otra sucursal con el mismo nombre
+    if ($nombre !== null && dbExisteSucursalPorNombreExcluyendoId($nombre, $id)) {
+        http_response_code(409);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Ya existe otra sucursal con ese nombre'
+        ]);
+        exit;
+    }
+    
+    // ========================================
+    // ACTUALIZACIÓN
+    // ========================================
+    
+    $datos = [];
+    if ($nombre !== null) $datos['nombre'] = $nombre;
+    if ($direccion !== null) $datos['direccion'] = $direccion ?: null;
+    if ($telefono !== null) $datos['telefono'] = $telefono ?: null;
+    if ($email !== null) $datos['email'] = $email ?: null;
+    if ($activa !== null) $datos['activa'] = $activa;
+    
+    if (empty($datos)) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'No hay datos para actualizar'
+        ]);
+        exit;
+    }
+    
+    try {
+        dbActualizarSucursal($id, $datos);
+        
+        // Obtener la sucursal actualizada
+        $sucursalActualizada = dbBuscarSucursalPorId($id);
+        
+        http_response_code(200);
+        echo json_encode([
+            'success' => true,
+            'message' => 'Sucursal actualizada correctamente',
+            'data' => $sucursalActualizada
+        ]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Error al actualizar la sucursal'
+        ]);
+    }
+}

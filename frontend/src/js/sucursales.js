@@ -1,7 +1,7 @@
 /**
  * Gestión de Sucursales - JavaScript
  *
- * Maneja la creación, listado con paginación, búsqueda y filtros de sucursales.
+ * Maneja la creación, listado con paginación, búsqueda, filtros y edición de sucursales.
  */
 
 $(document).ready(() => {
@@ -15,7 +15,6 @@ $(document).ready(() => {
 	const $tabla = $("#tablaSucursales");
 	const $searchInput = $("#searchInput");
 	const $estadoFilter = $("#estadoFilter");
-	const $paginationControls = $("#paginationControls");
 	const $infoRegistros = $("#infoRegistros");
 	const $paginas = $("#paginas");
 
@@ -36,10 +35,9 @@ $(document).ready(() => {
 	let debounceTimer = null;
 
 	// ========================================
-	// VALIDACIÓN PERSONALIZADA
+	// VALIDACIÓN PERSONALIZADA (CREAR)
 	// ========================================
 
-	// Agregar regla custom para teléfono
 	if (window.FormValidator) {
 		formValidator = new FormValidator("#formSucursal", {
 			validateOnSubmit: true,
@@ -47,7 +45,6 @@ $(document).ready(() => {
 			validateOnInput: true,
 		});
 
-		// Override de validateField para manejar la regla 'phone'
 		formValidator.validateField = function (name) {
 			const field = this.fields[name];
 			if (!field) return true;
@@ -55,39 +52,32 @@ $(document).ready(() => {
 			const value = field.element.value.trim();
 			const rules = field.rules;
 
-			// Limpiar errores
 			this.clearError(name);
 
-			// Required
 			if (rules.required && !value) {
 				this.setError(name, "Este campo es requerido");
 				return false;
 			}
 
-			// Si no tiene valor y no es required, no validar más
 			if (!value && !rules.required) {
 				return true;
 			}
 
-			// Email
 			if (rules.email && value && !this.isValidEmail(value)) {
 				this.setError(name, "Ingresá un email válido");
 				return false;
 			}
 
-			// Min length
 			if (rules.minLength && value.length < parseInt(rules.minLength)) {
 				this.setError(name, `Mínimo ${rules.minLength} caracteres`);
 				return false;
 			}
 
-			// Max length
 			if (rules.maxLength && value.length > parseInt(rules.maxLength)) {
 				this.setError(name, `Máximo ${rules.maxLength} caracteres`);
 				return false;
 			}
 
-			// Phone custom
 			if (rules.phone && value) {
 				const phoneRegex = /^[0-9]{8,15}$/;
 				if (!phoneRegex.test(value)) {
@@ -98,83 +88,53 @@ $(document).ready(() => {
 
 			return true;
 		};
-
-		// Manejar envío del formulario
-		$form.on("submit", (e) => {
-			e.preventDefault();
-
-			if (!formValidator.validate()) {
-				return false;
-			}
-
-			// Recoger datos
-			const datos = {
-				nombre: $("#nombre").val().trim(),
-				direccion: $("#direccion").val().trim() || null,
-				telefono: $("#telefono").val().trim() || null,
-				email: $("#email").val().trim() || null,
-			};
-
-			// Validación adicional en cliente (teléfono)
-			if (datos.telefono) {
-				const phoneRegex = /^[0-9]{8,15}$/;
-				if (!phoneRegex.test(datos.telefono)) {
-					Swal.fire({
-						icon: "error",
-						title: "Error de validación",
-						text: "El teléfono debe contener solo números (8-15 dígitos)",
-						confirmButtonText: "Aceptar",
-					});
-					return;
-				}
-			}
-
-			// Validación adicional en cliente (email)
-			if (datos.email) {
-				const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-				if (!emailRegex.test(datos.email)) {
-					Swal.fire({
-						icon: "error",
-						title: "Error de validación",
-						text: "El email no tiene un formato válido",
-						confirmButtonText: "Aceptar",
-					});
-					return;
-				}
-			}
-
-			enviarFormulario(datos);
-		});
-	} else {
-		// Fallback si no hay FormValidator
-		$form.on("submit", (e) => {
-			e.preventDefault();
-
-			const nombre = $("#nombre").val().trim();
-			if (!nombre) {
-				Swal.fire({
-					icon: "error",
-					title: "Error",
-					text: "El nombre es obligatorio",
-					confirmButtonText: "Aceptar",
-				});
-				return;
-			}
-
-			const datos = {
-				nombre: nombre,
-				direccion: $("#direccion").val().trim() || null,
-				telefono: $("#telefono").val().trim() || null,
-				email: $("#email").val().trim() || null,
-			};
-
-			enviarFormulario(datos);
-		});
 	}
 
 	// ========================================
-	// ENVÍO A LA API (CREAR)
+	// ENVÍO FORMULARIO (CREAR)
 	// ========================================
+
+	$form.on("submit", (e) => {
+		e.preventDefault();
+
+		if (formValidator && !formValidator.validate()) {
+			return;
+		}
+
+		const nombre = $("#nombre").val().trim();
+		if (!nombre && formValidator) {
+			return;
+		}
+
+		const datos = {
+			nombre: nombre,
+			direccion: $("#direccion").val().trim() || null,
+			telefono: $("#telefono").val().trim() || null,
+			email: $("#email").val().trim() || null,
+		};
+
+		if (datos.telefono && !/^[0-9]{8,15}$/.test(datos.telefono)) {
+			Swal.fire({
+				icon: "error",
+				title: "Error de validación",
+				text: "El teléfono debe contener solo números (8-15 dígitos)",
+				confirmButtonText: "Aceptar",
+			});
+			return;
+		}
+
+		if (datos.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
+			Swal.fire({
+				icon: "error",
+				title: "Error de validación",
+				text: "El email no tiene un formato válido",
+				confirmButtonText: "Aceptar",
+			});
+			return;
+		}
+
+		enviarFormulario(datos);
+	});
 
 	function enviarFormulario(datos) {
 		$.ajax({
@@ -184,7 +144,6 @@ $(document).ready(() => {
 			data: JSON.stringify(datos),
 			success: (respuesta) => {
 				if (respuesta.success) {
-					// Recargar listado con el estado actual
 					cargarSucursales();
 
 					Swal.fire({
@@ -193,7 +152,6 @@ $(document).ready(() => {
 						text: respuesta.message || "Sucursal creada correctamente",
 						confirmButtonText: "Aceptar",
 					}).then(() => {
-						// Limpiar formulario
 						$form[0].reset();
 						if (formValidator) {
 							formValidator.clearAllErrors();
@@ -233,14 +191,141 @@ $(document).ready(() => {
 	}
 
 	// ========================================
+	// ALERTA SWEETALERT2 PARA EDITAR
+	// ========================================
+
+	function abrirFormularioEditar(sucursal) {
+		const htmlFormulario = `
+			<div class="space-y-4">
+				<div>
+					<label for="swal-nombre" class="block text-sm font-medium text-gray-700 mb-1 text-left">Nombre *</label>
+					<input type="text" id="swal-nombre" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" value="${escapeHtml(sucursal.nombre || "")}" placeholder="Nombre de la sucursal">
+				</div>
+				<div>
+					<label for="swal-direccion" class="block text-sm font-medium text-gray-700 mb-1 text-left">Dirección</label>
+					<input type="text" id="swal-direccion" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" value="${escapeHtml(sucursal.direccion || "")}" placeholder="Dirección de la sucursal">
+				</div>
+				<div>
+					<label for="swal-telefono" class="block text-sm font-medium text-gray-700 mb-1 text-left">Teléfono</label>
+					<input type="text" id="swal-telefono" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" value="${escapeHtml(sucursal.telefono || "")}" placeholder="Solo números (8-15 dígitos)">
+				</div>
+				<div>
+					<label for="swal-email" class="block text-sm font-medium text-gray-700 mb-1 text-left">Email</label>
+					<input type="email" id="swal-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" value="${escapeHtml(sucursal.email || "")}" placeholder="email@ejemplo.com">
+				</div>
+				<div class="flex items-center gap-2">
+					<input type="checkbox" id="swal-activa" class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500" ${sucursal.activa ? "checked" : ""}>
+					<label for="swal-activa" class="text-sm font-medium text-gray-700">Sucursal activa</label>
+				</div>
+			</div>
+		`;
+
+		Swal.fire({
+			title: "Editar Sucursal",
+			html: htmlFormulario,
+			showCancelButton: true,
+			confirmButtonText: "Guardar Cambios",
+			cancelButtonText: "Cancelar",
+			confirmButtonColor: "#16a34a",
+			cancelButtonColor: "#6b7280",
+			width: "500px",
+			customClass: {
+				confirmButton:
+					"bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors",
+				cancelButton:
+					"bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors",
+			},
+			preConfirm: () => {
+				const nombre = $("#swal-nombre").val().trim();
+				const telefono = $("#swal-telefono").val().trim();
+				const email = $("#swal-email").val().trim();
+
+				if (!nombre) {
+					Swal.showValidationMessage("El nombre es obligatorio");
+					return false;
+				}
+
+				if (telefono && !/^[0-9]{8,15}$/.test(telefono)) {
+					Swal.showValidationMessage(
+						"El teléfono debe contener solo números (8-15 dígitos)",
+					);
+					return false;
+				}
+
+				if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+					Swal.showValidationMessage("El email no tiene un formato válido");
+					return false;
+				}
+
+				return {
+					nombre: nombre,
+					direccion: $("#swal-direccion").val().trim() || null,
+					telefono: telefono || null,
+					email: email || null,
+					activa: $("#swal-activa").is(":checked"),
+				};
+			},
+		}).then((result) => {
+			if (result.isConfirmed && result.value) {
+				enviarEdicion(sucursal.id, result.value);
+			}
+		});
+	}
+
+	function enviarEdicion(id, datos) {
+		$.ajax({
+			url: API_BASE + "?accion=actualizar_sucursal&id=" + id,
+			type: "PUT",
+			contentType: "application/json",
+			data: JSON.stringify(datos),
+			success: (respuesta) => {
+				if (respuesta.success) {
+					cargarSucursales();
+
+					Swal.fire({
+						icon: "success",
+						title: "¡Éxito!",
+						text: respuesta.message || "Sucursal actualizada correctamente",
+						confirmButtonText: "Aceptar",
+					});
+				} else {
+					Swal.fire({
+						icon: "error",
+						title: "Error",
+						text: respuesta.error || "No se pudo actualizar la sucursal",
+						confirmButtonText: "Aceptar",
+					});
+				}
+			},
+			error: (xhr) => {
+				let mensaje = "Error de conexión";
+
+				if (xhr.responseJSON && xhr.responseJSON.error) {
+					mensaje = xhr.responseJSON.error;
+				} else if (xhr.status === 404) {
+					mensaje = "La sucursal no fue encontrada";
+				} else if (xhr.status === 409) {
+					mensaje = "Ya existe otra sucursal con ese nombre";
+				}
+
+				Swal.fire({
+					icon: "error",
+					title: "Error",
+					text: mensaje,
+					confirmButtonText: "Aceptar",
+				});
+			},
+		});
+	}
+
+	// ========================================
 	// LISTADO CON PAGINACIÓN Y FILTROS
 	// ========================================
 
 	function cargarSucursales() {
-		// Mostrar loader en la tabla
 		$tabla.html(`
             <tr>
-                <td colspan="7" class="py-6 text-center text-gray-500">
+                <td colspan="8" class="py-6 text-center text-gray-500">
                     <div class="flex flex-col items-center gap-2">
                         <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
                         Cargando sucursales...
@@ -272,7 +357,7 @@ $(document).ready(() => {
 			error: (xhr) => {
 				$tabla.html(`
                     <tr>
-                        <td colspan="7" class="py-6 text-center text-red-500">
+                        <td colspan="8" class="py-6 text-center text-red-500">
                             <div class="flex flex-col items-center gap-2">
                                 <i data-lucide="alert-circle" class="w-6 h-6"></i>
                                 Error al cargar las sucursales
@@ -283,7 +368,6 @@ $(document).ready(() => {
 				lucide.createIcons();
 			},
 			complete: () => {
-				// Quitar spinner de búsqueda
 				$searchInput.closest(".relative").removeClass("searching");
 			},
 		});
@@ -293,7 +377,7 @@ $(document).ready(() => {
 		if (!sucursales || sucursales.length === 0) {
 			$tabla.html(`
                 <tr>
-                    <td colspan="7" class="py-6 text-center text-gray-500">
+                    <td colspan="8" class="py-6 text-center text-gray-500">
                         <div class="flex flex-col items-center gap-2">
                             <i data-lucide="package-x" class="w-6 h-6"></i>
                             No hay sucursales que coincidan con los filtros
@@ -321,7 +405,7 @@ $(document).ready(() => {
 			);
 
 			html += `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-id="${sucursal.id}">
                     <td class="py-3 px-4">${sucursal.id}</td>
                     <td class="py-3 px-4 font-medium">${escapeHtml(sucursal.nombre)}</td>
                     <td class="py-3 px-4">${sucursal.direccion ? escapeHtml(sucursal.direccion) : '<span class="text-gray-400">—</span>'}</td>
@@ -329,6 +413,11 @@ $(document).ready(() => {
                     <td class="py-3 px-4">${sucursal.email ? escapeHtml(sucursal.email) : '<span class="text-gray-400">—</span>'}</td>
                     <td class="py-3 px-4">${estadoBadge}</td>
                     <td class="py-3 px-4">${fechaCreacion}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button type="button" class="btn-editar p-2 hover:bg-green-100 rounded-lg transition-colors" title="Editar sucursal" data-id="${sucursal.id}">
+                            <i data-lucide="pencil" class="w-4 h-4 text-green-600"></i>
+                        </button>
+                    </td>
                 </tr>
             `;
 		});
@@ -337,6 +426,30 @@ $(document).ready(() => {
 		lucide.createIcons();
 	}
 
+	// Delegated click para botones de editar
+	$tabla.on("click", ".btn-editar", function () {
+		const id = $(this).data("id");
+		const row = $tabla.find(`tr[data-id="${id}"]`);
+		const sucursal = {
+			id: id,
+			nombre: row.find("td").eq(1).text(),
+			direccion:
+				row.find("td").eq(2).find("span.text-gray-400").length > 0
+					? ""
+					: row.find("td").eq(2).text().trim(),
+			telefono:
+				row.find("td").eq(3).find("span.text-gray-400").length > 0
+					? ""
+					: row.find("td").eq(3).text().trim(),
+			email:
+				row.find("td").eq(4).find("span.text-gray-400").length > 0
+					? ""
+					: row.find("td").eq(4).text().trim(),
+			activa: row.find("td").eq(5).find("span").hasClass("bg-green-100"),
+		};
+		abrirFormularioEditar(sucursal);
+	});
+
 	function renderizarPaginacion(pagination) {
 		if (!pagination) return;
 
@@ -344,18 +457,16 @@ $(document).ready(() => {
 		const inicio = (page - 1) * per_page + 1;
 		const fin = Math.min(page * per_page, total);
 
-		// Info de registros
 		if (total === 0) {
 			$infoRegistros.text("No hay registros");
 		} else {
 			$infoRegistros.text(`Mostrando ${inicio}-${fin} de ${total} registros`);
 		}
 
-		// Botones de paginación
 		$paginas.empty();
 
 		if (total_pages <= 1) {
-			return; // No mostrar paginación si hay una sola página
+			return;
 		}
 
 		const maxBotones = 5;
@@ -366,7 +477,6 @@ $(document).ready(() => {
 			startPage = Math.max(1, endPage - maxBotones + 1);
 		}
 
-		// Botón anterior
 		const prevDisabled =
 			page <= 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-green-100";
 		$paginas.append(`
@@ -375,7 +485,6 @@ $(document).ready(() => {
             </button>
         `);
 
-		// Botones de páginas
 		for (let i = startPage; i <= endPage; i++) {
 			const activeClass =
 				i === page
@@ -388,7 +497,6 @@ $(document).ready(() => {
             `);
 		}
 
-		// Botón siguiente
 		const nextDisabled =
 			page >= total_pages
 				? "opacity-50 cursor-not-allowed"
@@ -406,26 +514,23 @@ $(document).ready(() => {
 	// EVENTOS DE CONTROLES
 	// ========================================
 
-	// Búsqueda con debounce
 	$searchInput.on("input", () => {
 		clearTimeout(debounceTimer);
 		$searchInput.closest(".relative").addClass("searching");
 
 		debounceTimer = setTimeout(() => {
 			estado.search = $searchInput.val().trim();
-			estado.page = 1; // Reset a página 1 en nueva búsqueda
+			estado.page = 1;
 			cargarSucursales();
 		}, 400);
 	});
 
-	// Filtro por estado
 	$estadoFilter.on("change", () => {
 		estado.estado = $estadoFilter.val();
 		estado.page = 1;
 		cargarSucursales();
 	});
 
-	// Ordenamiento por columnas
 	$tabla
 		.closest(".overflow-x-auto")
 		.find("th.sortable")
@@ -435,7 +540,6 @@ $(document).ready(() => {
 
 			if (!column) return;
 
-			// Toggle orden
 			if (estado.sort === column) {
 				estado.order = estado.order === "ASC" ? "DESC" : "ASC";
 			} else {
@@ -447,7 +551,6 @@ $(document).ready(() => {
 			cargarSucursales();
 		});
 
-	// Paginación (delegated events)
 	$paginas.on("click", "button[data-page]", function () {
 		const newPage = parseInt($(this).data("page"));
 		if (!isNaN(newPage) && newPage > 0) {
@@ -456,14 +559,12 @@ $(document).ready(() => {
 		}
 	});
 
-	// Actualizar indicador visual de orden
 	function actualizarIndicadorOrden() {
 		$("th.sortable").removeClass("asc desc");
 		$(`th.sortable[data-sort="${estado.sort}"]`).addClass(
 			estado.order.toLowerCase(),
 		);
 
-		// Cambiar icono según dirección
 		$(`th.sortable[data-sort="${estado.sort}"] .sort-icon i`).attr(
 			"data-lucide",
 			estado.order === "ASC" ? "chevron-up" : "chevron-down",

@@ -82,6 +82,17 @@ switch ($accion) {
         ctrlActualizarSucursal();
         break;
     
+    // Marcas
+    case 'crear_marca':
+        require_once __DIR__ . '/controllers/marcas.php';
+        ctrlCrearMarca();
+        break;
+        
+    case 'listar_marcas':
+        require_once __DIR__ . '/controllers/marcas.php';
+        ctrlListarMarcas();
+        break;
+    
     // Fallback
     default:
         echo json_encode([

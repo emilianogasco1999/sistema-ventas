@@ -6,15 +6,15 @@ Sistema de gestión de ventas y stock para forrajería, desarrollado con arquite
 
 ## Tecnologias
 
-| Capa | Tecnologia | Version |
-|------|------------|---------|
-| **Backend** | PHP | 8.x+ |
-| **Base de Datos** | MySQL | 8.x+ (XAMPP) |
-| **Frontend** | HTML5 + CSS3 | - |
-| **JavaScript** | Vanilla JS + jQuery | 3.x |
-| **Iconos** | Lucide Icons | - |
-| **Alertas** | SweetAlert2 | - |
-| **Conexión BD** | PDO (PHP Data Objects) | - |
+| Capa              | Tecnologia             | Version      |
+| ----------------- | ---------------------- | ------------ |
+| **Backend**       | PHP                    | 8.x+         |
+| **Base de Datos** | MySQL                  | 8.x+ (XAMPP) |
+| **Frontend**      | HTML5 + CSS3           | -            |
+| **JavaScript**    | Vanilla JS + jQuery    | 3.x          |
+| **Iconos**        | Lucide Icons           | -            |
+| **Alertas**       | SweetAlert2            | -            |
+| **Conexión BD**   | PDO (PHP Data Objects) | -            |
 
 ---
 
@@ -70,8 +70,8 @@ sistema-ventas/
 
 ### 2. Credenciales de Acceso
 
-| Usuario | Contraseña | Rol |
-|---------|------------|-----|
+| Usuario | Contraseña | Rol           |
+| ------- | ---------- | ------------- |
 | `admin` | `admin123` | Administrador |
 
 ### 3. Acceder al Sistema
@@ -101,8 +101,8 @@ define('DB_CHARSET', 'utf8mb4');
 La contraseña se hashea con **bcrypt**. Para cambiarla, ejecutar en phpMyAdmin:
 
 ```sql
-UPDATE usuarios 
-SET password = '$2y$10$TU_HASH_Bcrypt' 
+UPDATE usuarios
+SET password = '$2y$10$TU_HASH_Bcrypt'
 WHERE username = 'admin';
 ```
 
@@ -125,12 +125,12 @@ O crear una nueva desde el sistema una vez logueado.
 
 ## API Endpoints
 
-| Acción | Descripción |
-|--------|-------------|
-| `login` | Autenticación de usuario |
-| `logout` | Cerrar sesión |
+| Acción             | Descripción                |
+| ------------------ | -------------------------- |
+| `login`            | Autenticación de usuario   |
+| `logout`           | Cerrar sesión              |
 | `verificar_sesion` | Verificar estado de sesión |
-| `dashboard_stats` | Estadísticas del dashboard |
+| `dashboard_stats`  | Estadísticas del dashboard |
 
 ---
 

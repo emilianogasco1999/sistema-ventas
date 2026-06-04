@@ -13,7 +13,7 @@ function verificarAdminAutenticado() {
         session_start();
     }
 
-    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || $_SESSION['usuario_rol'] !== 'Administrador') {
+    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || ($_SESSION['usuario_rol'] !== 'Administrador' && $_SESSION['usuario_rol'] !== 'Super Admin')) {
         echo json_encode([
             'success' => false,
             'error' => 'Acceso denegado. Se requieren permisos de Administrador.'

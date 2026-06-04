@@ -35,3 +35,5 @@ Thumbs.db
 # Build
 dist/
 build/
+# Local Pi runtime state
+.atl/

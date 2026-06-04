@@ -77,6 +77,11 @@ switch ($accion) {
         ctrlListarSucursales();
         break;
     
+    case 'actualizar_sucursal':
+        require_once __DIR__ . '/controllers/sucursal.php';
+        ctrlActualizarSucursal();
+        break;
+    
     // Fallback
     default:
         echo json_encode([

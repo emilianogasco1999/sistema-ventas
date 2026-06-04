@@ -61,96 +61,116 @@ require_once __DIR__ . '/../../componentes/header.php';
                         </div>
                     </div>
                 </div>
-                <!-- Grid de opciones de configuración -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    
-                    <!-- Usuarios -->
-                    <a href="usuarios.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-                                <i data-lucide="users" class="w-7 h-7 text-blue-600 group-hover:text-white transition-colors"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800">Usuarios</h3>
-                                <p class="text-sm text-gray-500">Gestionar cuentas</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-600 text-sm">Crear, editar y desactivar usuarios del sistema.</p>
-                    </a>
-                    
-                    <!-- Roles -->
-                    <a href="roles.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center group-hover:bg-purple-500 transition-colors">
-                                <i data-lucide="shield" class="w-7 h-7 text-purple-600 group-hover:text-white transition-colors"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800">Roles</h3>
-                                <p class="text-sm text-gray-500">Permisos y accesos</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-600 text-sm">Definir roles y permisos del sistema.</p>
-                    </a>
-                    
-                    <!-- Sucursales -->
-                    <a href="sucursales.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-500 transition-colors">
-                                <i data-lucide="store" class="w-7 h-7 text-green-600 group-hover:text-white transition-colors"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800">Sucursales</h3>
-                                <p class="text-sm text-gray-500">Puntos de venta</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-600 text-sm">Administrar sucursales y locales.</p>
-                    </a>
-                    
-                    <!-- Métodos de Pago -->
-                    <a href="metodos-pago.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-14 h-14 rounded-xl bg-yellow-100 flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
-                                <i data-lucide="credit-card" class="w-7 h-7 text-yellow-600 group-hover:text-white transition-colors"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800">Métodos de Pago</h3>
-                                <p class="text-sm text-gray-500">Formas de cobro</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-600 text-sm">Configurar medios de pago disponibles.</p>
-                    </a>
-                    
-                    <!-- Categorías -->
-                    <a href="categorias.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-14 h-14 rounded-xl bg-pink-100 flex items-center justify-center group-hover:bg-pink-500 transition-colors">
-                                <i data-lucide="tag" class="w-7 h-7 text-pink-600 group-hover:text-white transition-colors"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800">Categorías</h3>
-                                <p class="text-sm text-gray-500">Tipos de productos</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-600 text-sm">Gestionar categorías de productos.</p>
-                    </a>
-                    
-                    <!-- Marcas -->
-                    <a href="marcas.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-14 h-14 rounded-xl bg-red-100 flex items-center justify-center group-hover:bg-red-500 transition-colors">
-                                <i data-lucide="bookmark-check" class="w-7 h-7 text-red-600 group-hover:text-white transition-colors"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800">Marcas</h3>
-                                <p class="text-sm text-gray-500">Fabricantes</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-600 text-sm">Administrar marcas de productos.</p>
-                    </a>
-                    
-                </div>
                 
-               
+                <?php if (strtoupper($userRole) === 'SUPER ADMIN'): ?>
+                <!-- Sección Super Admin -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i data-lucide="crown" class="w-5 h-5 text-yellow-600"></i>
+                        Configuración Super Admin
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Sucursales -->
+                        <a href="sucursales.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-yellow-500 transition-colors group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 rounded-xl bg-yellow-100 flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
+                                    <i data-lucide="store" class="w-7 h-7 text-yellow-600 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Sucursales</h3>
+                                    <p class="text-sm text-gray-500">Puntos de venta</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm">Administrar sucursales y locales del sistema.</p>
+                        </a>
+                        
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($userRole === 'Administrador' || $userRole === 'Super Admin'): ?>
+                <!-- Sección Administrador -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i data-lucide="settings" class="w-5 h-5 text-purple-600"></i>
+                        Configuración General
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Usuarios -->
+                        <a href="usuarios.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+                                    <i data-lucide="users" class="w-7 h-7 text-blue-600 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Usuarios</h3>
+                                    <p class="text-sm text-gray-500">Gestionar cuentas</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm">Crear, editar y desactivar usuarios del sistema.</p>
+                        </a>
+                        
+                        <!-- Roles -->
+                        <a href="roles.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center group-hover:bg-purple-500 transition-colors">
+                                    <i data-lucide="shield" class="w-7 h-7 text-purple-600 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Roles</h3>
+                                    <p class="text-sm text-gray-500">Permisos y accesos</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm">Definir roles y permisos del sistema.</p>
+                        </a>
+                        
+                        <!-- Métodos de Pago -->
+                        <a href="metodos-pago.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 rounded-xl bg-yellow-100 flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
+                                    <i data-lucide="credit-card" class="w-7 h-7 text-yellow-600 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Métodos de Pago</h3>
+                                    <p class="text-sm text-gray-500">Formas de cobro</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm">Configurar medios de pago disponibles.</p>
+                        </a>
+                        
+                        <!-- Categorías -->
+                        <a href="categorias.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 rounded-xl bg-pink-100 flex items-center justify-center group-hover:bg-pink-500 transition-colors">
+                                    <i data-lucide="tag" class="w-7 h-7 text-pink-600 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Categorías</h3>
+                                    <p class="text-sm text-gray-500">Tipos de productos</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm">Gestionar categorías de productos.</p>
+                        </a>
+                        
+                        <!-- Marcas -->
+                        <a href="marcas.php" class="config-card bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:border-green-500 transition-colors group">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 rounded-xl bg-red-100 flex items-center justify-center group-hover:bg-red-500 transition-colors">
+                                    <i data-lucide="bookmark-check" class="w-7 h-7 text-red-600 group-hover:text-white transition-colors"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Marcas</h3>
+                                    <p class="text-sm text-gray-500">Fabricantes</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm">Administrar marcas de productos.</p>
+                        </a>
+                        
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </main>
     </div>

@@ -104,9 +104,9 @@ HTML;
         }
     }
 
-    // Sección de Configuración (solo para Administradores)
+    // Sección de Configuración (solo para Administradores y Super Admin)
     $configSection = '';
-    if ($userRole === 'Administrador') {
+    if ($userRole === 'Administrador' || strtoupper($userRole) === 'SUPER ADMIN') {
         $isActiveConfig = (strpos($activePage, 'config_') === 0) ? 'active' : '';
 
         // Si está activo, usar span
@@ -176,4 +176,34 @@ HTML;
             </div>
         </aside>
 HTML;
+
+    // Scripts del sidebar (inline para que ande en todas las páginas)
+    $scriptsSidebar = <<<HTML
+    <script src="../../assets/js/jquery.min.js"></script>
+    <script src="../../assets/js/sweetalert2.all.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        // Logout
+        $("#btnLogout").on("click", function() {
+            Swal.fire({
+                title: "¿Cerrar sesión?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#dc2626",
+                cancelButtonColor: "#6b7280",
+                confirmButtonText: "Sí, cerrar",
+                cancelButtonText: "Cancelar",
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    $.post("../../../backend/api.php?accion=logout", function() {
+                        window.location.href = "../login.php";
+                    });
+                }
+            });
+        });
+    });
+    </script>
+HTML;
+
+    return $html . $scriptsSidebar;
 }

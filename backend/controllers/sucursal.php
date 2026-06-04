@@ -150,15 +150,33 @@ function ctrlCrearSucursal() {
 }
 
 /**
- * Controlador: Listar todas las sucursales
+ * Controlador: Listar sucursales con filtros y paginación
  */
 function ctrlListarSucursales() {
+    // Verificar permisos
+    requerirSuperAdmin();
+    
+    $params = [
+        'search'  => $_GET['search'] ?? '',
+        'estado'  => $_GET['estado'] ?? 'todas',
+        'sort'    => $_GET['sort'] ?? 'nombre',
+        'order'   => $_GET['order'] ?? 'ASC',
+        'page'    => $_GET['page'] ?? 1,
+        'per_page' => $_GET['per_page'] ?? 10
+    ];
+    
     try {
-        $sucursales = dbListarSucursales();
+        $resultado = dbListarSucursales($params);
         
         echo json_encode([
             'success' => true,
-            'data' => $sucursales
+            'data' => $resultado['data'],
+            'pagination' => [
+                'total' => $resultado['total'],
+                'page' => $resultado['page'],
+                'per_page' => $resultado['per_page'],
+                'total_pages' => $resultado['total_pages']
+            ]
         ]);
     } catch (Exception $e) {
         http_response_code(500);

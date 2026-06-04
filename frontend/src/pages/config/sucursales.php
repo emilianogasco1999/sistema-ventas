@@ -32,7 +32,7 @@ require_once __DIR__ . '/../../componentes/header.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sucursales - Forraiería</title>
+    <title>Sucursales - Forrajería</title>
     <!-- Assets locales -->
     <link rel="stylesheet" href="../../../assets/css/tailwind.min.css">
     <link rel="stylesheet" href="../../../assets/css/dark-mode.css">
@@ -59,6 +59,21 @@ require_once __DIR__ . '/../../componentes/header.php';
         body.dark tr:hover {
             background-color: #374151 !important;
         }
+        /* Indicador de orden activa */
+        th.sortable .sort-icon {
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+        th.sortable.asc .sort-icon,
+        th.sortable.desc .sort-icon {
+            opacity: 1;
+        }
+        /* Transición suave para reordenar columnas */
+        th { cursor: pointer; user-select: none; }
+        th.sortable:hover .sort-icon { opacity: 0.7; }
+        /* Spinner de búsqueda */
+        .search-spinner { display: none; }
+        .searching .search-spinner { display: inline-block; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -146,21 +161,63 @@ require_once __DIR__ . '/../../componentes/header.php';
                             Sucursales Registradas
                         </h3>
                         
+                        <!-- Controles: búsqueda y filtros -->
+                        <div class="flex flex-wrap items-center gap-3 mb-4">
+                            <!-- Búsqueda -->
+                            <div class="relative flex-1 min-w-[200px] max-w-xs">
+                                <i data-lucide="search" class="absolute left-3 top-3 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                <input type="text" 
+                                       id="searchInput" 
+                                       placeholder="Buscar por nombre..." 
+                                       class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm">
+                                <i data-lucide="loader-2" class="absolute right-3 top-3 -translate-y-1/2 w-4 h-4 text-gray-400 search-spinner animate-spin"></i>
+                            </div>
+                            
+                            <!-- Filtro por estado -->
+                            <select id="estadoFilter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white">
+                                <option value="todas">Todas</option>
+                                <option value="activas">Activas</option>
+                                <option value="inactivas">Inactivas</option>
+                            </select>
+                        </div>
+                        
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="border-b border-gray-200 text-gray-500 text-sm">
-                                        <th class="py-3 px-4 font-semibold">Nombre</th>
+                                        <th class="py-3 px-4 font-semibold sortable" data-sort="id">
+                                            <span class="flex items-center gap-1">
+                                                ID
+                                                <span class="sort-icon">
+                                                    <i data-lucide="chevrons-up-down" class="w-4 h-4"></i>
+                                                </span>
+                                            </span>
+                                        </th>
+                                        <th class="py-3 px-4 font-semibold sortable" data-sort="nombre">
+                                            <span class="flex items-center gap-1">
+                                                Nombre
+                                                <span class="sort-icon">
+                                                    <i data-lucide="chevrons-up-down" class="w-4 h-4"></i>
+                                                </span>
+                                            </span>
+                                        </th>
                                         <th class="py-3 px-4 font-semibold">Dirección</th>
                                         <th class="py-3 px-4 font-semibold">Teléfono</th>
                                         <th class="py-3 px-4 font-semibold">Email</th>
                                         <th class="py-3 px-4 font-semibold">Estado</th>
-                                        <th class="py-3 px-4 font-semibold">Fecha de Creación</th>
+                                        <th class="py-3 px-4 font-semibold sortable" data-sort="created_at">
+                                            <span class="flex items-center gap-1">
+                                                Fecha Creación
+                                                <span class="sort-icon">
+                                                    <i data-lucide="chevrons-up-down" class="w-4 h-4"></i>
+                                                </span>
+                                            </span>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaSucursales" class="divide-y divide-gray-100 text-sm text-gray-700">
                                     <tr>
-                                        <td colspan="6" class="py-6 text-center text-gray-500">
+                                        <td colspan="7" class="py-6 text-center text-gray-500">
                                             <div class="flex flex-col items-center gap-2">
                                                 <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
                                                 Cargando sucursales...
@@ -169,6 +226,16 @@ require_once __DIR__ . '/../../componentes/header.php';
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                        
+                        <!-- Paginación -->
+                        <div id="paginationControls" class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                            <div class="text-sm text-gray-500">
+                                <span id="infoRegistros">Mostrando 0 registros</span>
+                            </div>
+                            <div id="paginas" class="flex items-center gap-1">
+                                <!-- Botones de paginación se generan dinámicamente -->
+                            </div>
                         </div>
                     </div>
                     

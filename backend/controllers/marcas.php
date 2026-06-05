@@ -106,11 +106,27 @@ function ctrlCrearMarca() {
 function ctrlListarMarcas() {
     verificarPermisoMarcas();
 
-    $marcas = dbListarMarcas();
+    $params = [
+        'search' => $_GET['search'] ?? '',
+        'sort' => $_GET['sort'] ?? 'nombre',
+        'order' => $_GET['order'] ?? 'ASC',
+        'page' => isset($_GET['page']) ? (int)$_GET['page'] : null,
+        'per_page' => isset($_GET['per_page']) ? (int)$_GET['per_page'] : null,
+        'paginar' => isset($_GET['page']) // Si se pasa 'page', paginamos por defecto
+    ];
+
+    $resultado = dbListarMarcasPaginado($params);
 
     echo json_encode([
         'success' => true,
-        'marcas' => $marcas
+        'marcas' => $resultado['data'],
+        'data' => $resultado['data'], // Consistencia con listados genéricos de la app
+        'pagination' => [
+            'total' => $resultado['total'],
+            'page' => $resultado['page'],
+            'per_page' => $resultado['per_page'],
+            'total_pages' => $resultado['total_pages']
+        ]
     ]);
     exit;
 }
@@ -236,3 +252,60 @@ function ctrlActualizarMarca() {
     }
     exit;
 }
+
+/**
+ * Controlador para eliminar una marca físicamente
+ */
+function ctrlEliminarMarca() {
+    verificarPermisoMarcas();
+
+    // Leer el ID de la marca desde la query string o del cuerpo JSON
+    $input = json_decode(file_get_contents('php://input'), true);
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : (isset($input['id']) ? (int)$input['id'] : 0);
+
+    // Validación de ID (RN-01)
+    if ($id <= 0) {
+        http_response_code(404);
+        echo json_encode([
+            'message' => 'La marca no existe.'
+        ]);
+        exit;
+    }
+
+    // Verificar si la marca existe (RN-01)
+    $marca = dbBuscarMarcaPorId($id);
+    if (!$marca) {
+        http_response_code(404);
+        echo json_encode([
+            'message' => 'La marca no existe.'
+        ]);
+        exit;
+    }
+
+    // Verificar si tiene productos asociados (RN-02 y RN-03)
+    $cantProductos = dbContarProductosPorMarca($id);
+    if ($cantProductos > 0) {
+        http_response_code(409);
+        echo json_encode([
+            'message' => 'No se puede eliminar la marca porque tiene productos asociados.'
+        ]);
+        exit;
+    }
+
+    // Eliminar físicamente (RN-04)
+    $exito = dbEliminarMarca($id);
+
+    if ($exito) {
+        http_response_code(200);
+        echo json_encode([
+            'message' => 'Marca eliminada correctamente.'
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode([
+            'message' => 'No se pudo eliminar la marca de la base de datos.'
+        ]);
+    }
+    exit;
+}
+

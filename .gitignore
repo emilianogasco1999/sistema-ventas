@@ -37,3 +37,5 @@ dist/
 build/
 # Local Pi runtime state
 .atl/
+
+openspec/

@@ -7,7 +7,7 @@
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 // Manejar preflight requests
@@ -101,6 +101,11 @@ switch ($accion) {
     case 'actualizar_marca':
         require_once __DIR__ . '/controllers/marcas.php';
         ctrlActualizarMarca();
+        break;
+    
+    case 'eliminar_marca':
+        require_once __DIR__ . '/controllers/marcas.php';
+        ctrlEliminarMarca();
         break;
     
     // Fallback

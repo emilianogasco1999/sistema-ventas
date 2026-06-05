@@ -1,10 +1,19 @@
-/**
- * Marcas Management Logic - Forrajería
- */
+// Estado global para la paginación, búsqueda y ordenamiento de marcas
+const estado = {
+	search: "",
+	sort: "nombre",
+	order: "ASC",
+	page: 1,
+	per_page: 8
+};
+
+let debounceTimer = null;
 
 $(document).ready(() => {
 	// Inicializar iconos Lucide
-	lucide.createIcons();
+	if (typeof lucide !== "undefined") {
+		lucide.createIcons();
+	}
 
 	// Cargar la lista inicial de marcas
 	cargarMarcas();
@@ -28,27 +37,98 @@ $(document).ready(() => {
 
 		abrirModalEdicion(id, nombre);
 	});
+
+	// Manejar el click en el botón de eliminar (Abre modal SweetAlert2 de confirmación)
+	$(document).on("click", ".btn-eliminar-marca", function () {
+		const id = $(this).data("id");
+		const nombre = $(this).data("nombre");
+
+		confirmarEliminacionMarca(id, nombre);
+	});
+
+	// Evento de búsqueda por input con debounce
+	$("#searchInput").on("input", () => {
+		clearTimeout(debounceTimer);
+		$("#searchInput").closest(".relative").addClass("searching");
+
+		debounceTimer = setTimeout(() => {
+			estado.search = $("#searchInput").val().trim();
+			estado.page = 1;
+			cargarMarcas();
+		}, 400);
+	});
+
+	// Evento de ordenamiento al clickear en la columna Nombre
+	$("#thNombre").on("click", function () {
+		if (estado.sort === "nombre") {
+			estado.order = estado.order === "ASC" ? "DESC" : "ASC";
+		} else {
+			estado.sort = "nombre";
+			estado.order = "ASC";
+		}
+		estado.page = 1;
+		cargarMarcas();
+	});
+
+	// Evento de paginación
+	$("#paginas").on("click", "button[data-page]", function () {
+		const newPage = parseInt($(this).data("page"));
+		if (!isNaN(newPage) && newPage > 0) {
+			estado.page = newPage;
+			cargarMarcas();
+		}
+	});
 });
 
 /**
- * Carga todas las marcas desde el backend
+ * Carga todas las marcas desde el backend aplicando paginación y búsqueda
  */
 function cargarMarcas() {
 	const $tabla = $("#tablaMarcas");
+	const $searchInput = $("#searchInput");
 
-	$.get("../../../../backend/api.php?accion=listar_marcas")
-		.done((response) => {
-			if (response.success) {
+	$tabla.html(`
+        <tr>
+            <td colspan="2" class="py-6 text-center text-gray-500">
+                <div class="flex flex-col items-center gap-2">
+                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
+                    Cargando marcas...
+                </div>
+            </td>
+        </tr>
+    `);
+	if (typeof lucide !== "undefined") {
+		lucide.createIcons();
+	}
+
+	$.ajax({
+		url: "../../../../backend/api.php",
+		type: "GET",
+		data: {
+			accion: "listar_marcas",
+			search: estado.search,
+			sort: estado.sort,
+			order: estado.order,
+			page: estado.page,
+			per_page: estado.per_page
+		},
+		success: (response) => {
+			if (response.success && response.marcas) {
 				$tabla.empty();
 
 				if (response.marcas.length === 0) {
 					$tabla.append(`
                         <tr>
                             <td colspan="2" class="py-6 text-center text-gray-500">
-                                No hay marcas registradas en el sistema.
+                                No se encontraron marcas.
                             </td>
                         </tr>
                     `);
+					$("#infoRegistros").text("No hay registros");
+					$("#paginas").empty();
+					if (typeof lucide !== "undefined") {
+						lucide.createIcons();
+					}
 					return;
 				}
 
@@ -56,30 +136,126 @@ function cargarMarcas() {
 					$tabla.append(`
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="py-3 px-4 font-medium text-gray-800">${escapeHtml(marca.nombre)}</td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="py-3 px-4 text-center flex items-center justify-center gap-2">
                                 <button class="btn-editar-marca text-blue-600 hover:text-blue-800 transition-colors p-1" 
                                         data-id="${marca.id}" 
                                         data-nombre="${escapeHtml(marca.nombre)}"
                                         title="Editar Marca">
                                     <i data-lucide="pencil" class="w-4 h-4"></i>
                                 </button>
+                                <button class="btn-eliminar-marca text-red-600 hover:text-red-800 transition-colors p-1" 
+                                        data-id="${marca.id}" 
+                                        data-nombre="${escapeHtml(marca.nombre)}"
+                                        title="Eliminar Marca">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
                             </td>
                         </tr>
                     `);
 				});
 
-				// Re-inicializar iconos Lucide
-				lucide.createIcons();
+				renderizarPaginacion(response.pagination);
+				actualizarIndicadorOrden();
 			} else {
 				mostrarError("Error al cargar marcas", response.error);
 			}
-		})
-		.fail((xhr) => {
+		},
+		error: (xhr) => {
 			const errorMsg =
 				xhr.responseJSON?.error || "Error de red al conectar con el servidor.";
 			mostrarError("Error al cargar marcas", errorMsg);
-		});
+		},
+		complete: () => {
+			$searchInput.closest(".relative").removeClass("searching");
+		}
+	});
 }
+
+/**
+ * Renderiza dinámicamente los botones de control de paginación
+ */
+function renderizarPaginacion(pagination) {
+	if (!pagination) return;
+
+	const $infoRegistros = $("#infoRegistros");
+	const $paginas = $("#paginas");
+
+	const { total, page, per_page, total_pages } = pagination;
+	const inicio = (page - 1) * per_page + 1;
+	const fin = Math.min(page * per_page, total);
+
+	if (total === 0) {
+		$infoRegistros.text("No hay registros");
+	} else {
+		$infoRegistros.text(`Mostrando ${inicio}-${fin} de ${total} registros`);
+	}
+
+	$paginas.empty();
+
+	if (total_pages <= 1) {
+		return;
+	}
+
+	const maxBotones = 5;
+	let startPage = Math.max(1, page - Math.floor(maxBotones / 2));
+	const endPage = Math.min(total_pages, startPage + maxBotones - 1);
+
+	if (endPage - startPage < maxBotones - 1) {
+		startPage = Math.max(1, endPage - maxBotones + 1);
+	}
+
+	const prevDisabled =
+		page <= 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-green-100";
+	$paginas.append(`
+        <button class="px-3 py-1 rounded border border-gray-300 text-sm ${prevDisabled}" data-page="${page - 1}" ${page <= 1 ? "disabled" : ""}>
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
+    `);
+
+	for (let i = startPage; i <= endPage; i++) {
+		const activeClass =
+			i === page
+				? "bg-green-600 text-white border-green-600"
+				: "border-gray-300 hover:bg-green-100";
+		$paginas.append(`
+            <button class="px-3 py-1 rounded border text-sm ${activeClass}" data-page="${i}">
+                ${i}
+            </button>
+        `);
+	}
+
+	const nextDisabled =
+		page >= total_pages
+			? "opacity-50 cursor-not-allowed"
+			: "hover:bg-green-100";
+	$paginas.append(`
+        <button class="px-3 py-1 rounded border border-gray-300 text-sm ${nextDisabled}" data-page="${page + 1}" ${page >= total_pages ? "disabled" : ""}>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+    `);
+
+	if (typeof lucide !== "undefined") {
+		lucide.createIcons();
+	}
+}
+
+/**
+ * Actualiza el indicador visual de ordenación en la cabecera Nombre
+ */
+function actualizarIndicadorOrden() {
+	const $th = $("#thNombre");
+	$th.removeClass("asc desc");
+	$th.addClass(estado.order.toLowerCase());
+
+	$th.find(".sort-icon i").attr(
+		"data-lucide",
+		estado.order === "ASC" ? "chevron-up" : "chevron-down"
+	);
+	if (typeof lucide !== "undefined") {
+		lucide.createIcons();
+	}
+}
+
 
 /**
  * Envía la petición para guardar una nueva marca (Creación)
@@ -249,4 +425,58 @@ function escapeHtml(text) {
 		"'": "&#039;",
 	};
 	return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+/**
+ * Muestra el diálogo SweetAlert2 para confirmar la eliminación de una marca
+ */
+function confirmarEliminacionMarca(id, nombre) {
+	const theme = obtenerSwalTheme();
+
+	Swal.fire({
+		title: "Eliminar Marca",
+		text: `¿Está seguro que desea eliminar la marca "${nombre}"? Esta acción no podrá deshacerse.`,
+		icon: "warning",
+		showCancelButton: true,
+		confirmButtonText: "Eliminar",
+		cancelButtonText: "Cancelar",
+		confirmButtonColor: "#ef4444",
+		cancelButtonColor: "#6b7280",
+		background: theme.background,
+		color: theme.color,
+	}).then((result) => {
+		if (result.isConfirmed) {
+			eliminarMarca(id);
+		}
+	});
+}
+
+/**
+ * Envía la petición AJAX con método DELETE para eliminar la marca
+ */
+function eliminarMarca(id) {
+	$.ajax({
+		url: `../../../../backend/api.php?accion=eliminar_marca&id=${id}`,
+		type: "DELETE",
+		dataType: "json",
+	})
+		.done((response) => {
+			// El backend responde con {"message": "..."} si es exitoso o con error en message según el código HTTP.
+			Swal.fire({
+				icon: "success",
+				title: "¡Eliminada!",
+				text: response.message || "Marca eliminada correctamente.",
+				timer: 2000,
+				showConfirmButton: false,
+				...obtenerSwalTheme(),
+			});
+
+			// Recargar la tabla
+			cargarMarcas();
+		})
+		.fail((xhr) => {
+			const errorMsg =
+				xhr.responseJSON?.message || xhr.responseJSON?.error || "Error de red al intentar eliminar.";
+			mostrarError("No se pudo eliminar la marca", errorMsg);
+		});
 }

@@ -59,6 +59,20 @@ require_once __DIR__ . '/../../componentes/header.php';
         body.dark tr:hover {
             background-color: #374151 !important;
         }
+        /* Indicador de orden activa */
+        th.sortable .sort-icon {
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+        th.sortable.asc .sort-icon,
+        th.sortable.desc .sort-icon {
+            opacity: 1;
+        }
+        th { cursor: pointer; user-select: none; }
+        th.sortable:hover .sort-icon { opacity: 0.7; }
+        /* Spinner de búsqueda */
+        .search-spinner { display: none; }
+        .searching .search-spinner { display: inline-block; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -116,17 +130,37 @@ require_once __DIR__ . '/../../componentes/header.php';
                             Marcas Registradas
                         </h3>
                         
+                        <!-- Controles: búsqueda -->
+                        <div class="flex flex-wrap items-center gap-3 mb-4">
+                            <!-- Búsqueda -->
+                            <div class="relative flex-1 min-w-[200px] max-w-xs">
+                                <i data-lucide="search" class="absolute left-3 top-3 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                <input type="text" 
+                                       id="searchInput" 
+                                       placeholder="Buscar por nombre..." 
+                                       class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm">
+                                <i data-lucide="loader-2" class="absolute right-3 top-3 -translate-y-1/2 w-4 h-4 text-gray-400 search-spinner animate-spin"></i>
+                            </div>
+                        </div>
+                        
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="border-b border-gray-200 text-gray-500 text-sm">
-                                        <th class="py-3 px-4 font-semibold">Nombre</th>
+                                        <th class="py-3 px-4 font-semibold sortable" data-sort="nombre" id="thNombre">
+                                            <span class="flex items-center gap-1">
+                                                Nombre
+                                                <span class="sort-icon">
+                                                    <i data-lucide="chevrons-up-down" class="w-4 h-4"></i>
+                                                </span>
+                                            </span>
+                                        </th>
                                         <th class="py-3 px-4 font-semibold text-center w-24">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaMarcas" class="divide-y divide-gray-100 text-sm text-gray-700">
                                     <tr>
-                                        <td class="py-6 text-center text-gray-500">
+                                        <td colspan="2" class="py-6 text-center text-gray-500">
                                             <div class="flex flex-col items-center gap-2">
                                                 <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
                                                 Cargando marcas...
@@ -135,6 +169,16 @@ require_once __DIR__ . '/../../componentes/header.php';
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                        
+                        <!-- Paginación -->
+                        <div id="paginationControls" class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                            <div class="text-sm text-gray-500">
+                                <span id="infoRegistros">Mostrando 0 registros</span>
+                            </div>
+                            <div id="paginas" class="flex items-center gap-1">
+                                <!-- Botones de paginación se generan dinámicamente -->
+                            </div>
                         </div>
                     </div>
                     

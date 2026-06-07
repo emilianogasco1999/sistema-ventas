@@ -136,6 +136,16 @@ require_once __DIR__ . '/../../componentes/header.php';
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- Paginación -->
+                        <div id="paginationControls" class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                            <div class="text-sm text-gray-500">
+                                <span id="infoRegistros">Mostrando 0 registros</span>
+                            </div>
+                            <div id="paginas" class="flex items-center gap-1">
+                                <!-- Botones de paginación dinámicos -->
+                            </div>
+                        </div>
                     </div>
                     
                 </div>

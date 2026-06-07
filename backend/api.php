@@ -123,6 +123,11 @@ switch ($accion) {
         require_once __DIR__ . '/controllers/categorias.php';
         ctrlActualizarCategoria();
         break;
+        
+    case 'eliminar_categoria':
+        require_once __DIR__ . '/controllers/categorias.php';
+        ctrlEliminarCategoria();
+        break;
     
     // Fallback
     default:

@@ -128,3 +128,27 @@ function dbActualizarCategoria($id, $nombre) {
     ]);
 }
 
+/**
+ * Cuenta la cantidad de productos asociados a una categoría específica
+ * @param int $categoriaId
+ * @return int
+ */
+function dbContarProductosPorCategoria($categoriaId) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("SELECT COUNT(*) FROM productos WHERE categoria_id = :categoria_id");
+    $stmt->execute(['categoria_id' => $categoriaId]);
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * Elimina una categoría físicamente de la base de datos
+ * @param int $id
+ * @return bool
+ */
+function dbEliminarCategoria($id) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("DELETE FROM categorias WHERE id = :id");
+    return $stmt->execute(['id' => $id]);
+}
+
+

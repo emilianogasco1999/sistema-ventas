@@ -194,3 +194,60 @@ function ctrlActualizarCategoria() {
     exit;
 }
 
+/**
+ * Controlador para eliminar una categoría físicamente
+ */
+function ctrlEliminarCategoria() {
+    verificarAdminAutenticado();
+
+    // Leer el ID de la categoría desde la query string o del cuerpo JSON
+    $input = json_decode(file_get_contents('php://input'), true);
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : (isset($input['id']) ? (int)$input['id'] : 0);
+
+    // Validación de ID
+    if ($id <= 0) {
+        http_response_code(404);
+        echo json_encode([
+            'message' => 'La categoría no existe.'
+        ]);
+        exit;
+    }
+
+    // Verificar si la categoría existe
+    $categoria = dbBuscarCategoriaPorId($id);
+    if (!$categoria) {
+        http_response_code(404);
+        echo json_encode([
+            'message' => 'La categoría no existe.'
+        ]);
+        exit;
+    }
+
+    // Verificar si tiene productos asociados
+    $cantProductos = dbContarProductosPorCategoria($id);
+    if ($cantProductos > 0) {
+        http_response_code(409);
+        echo json_encode([
+            'message' => 'No es posible eliminar la categoría porque posee productos asociados.'
+        ]);
+        exit;
+    }
+
+    // Eliminar físicamente
+    $exito = dbEliminarCategoria($id);
+
+    if ($exito) {
+        http_response_code(200);
+        echo json_encode([
+            'message' => 'Categoría eliminada correctamente.'
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode([
+            'message' => 'No se pudo eliminar la categoría de la base de datos.'
+        ]);
+    }
+    exit;
+}
+
+

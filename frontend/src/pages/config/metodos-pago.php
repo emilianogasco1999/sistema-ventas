@@ -122,11 +122,12 @@ require_once __DIR__ . '/../../componentes/header.php';
                                     <tr class="border-b border-gray-200 text-gray-500 text-sm">
                                         <th class="py-3 px-4 font-semibold">Nombre</th>
                                         <th class="py-3 px-4 font-semibold w-24 text-center">ID</th>
+                                        <th class="py-3 px-4 font-semibold w-24 text-center">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaMetodosPago" class="divide-y divide-gray-100 text-sm text-gray-700">
                                     <tr>
-                                        <td colspan="2" class="py-6 text-center text-gray-500">
+                                        <td colspan="3" class="py-6 text-center text-gray-500">
                                             <div class="flex flex-col items-center gap-2">
                                                 <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
                                                 Cargando métodos de pago...

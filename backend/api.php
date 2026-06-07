@@ -108,6 +108,17 @@ switch ($accion) {
         ctrlEliminarMarca();
         break;
     
+    // Categorías
+    case 'crear_categoria':
+        require_once __DIR__ . '/controllers/categorias.php';
+        ctrlCrearCategoria();
+        break;
+        
+    case 'listar_categorias':
+        require_once __DIR__ . '/controllers/categorias.php';
+        ctrlListarCategorias();
+        break;
+    
     // Fallback
     default:
         echo json_encode([

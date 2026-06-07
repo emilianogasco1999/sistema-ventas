@@ -44,6 +44,13 @@ $(document).ready(() => {
         const nombre = $(this).data("nombre");
         abrirModalEdicion(id, nombre);
     });
+
+    // Evento para confirmar la eliminación de una categoría
+    $("#tablaCategorias").on("click", ".btn-eliminar", function () {
+        const id = $(this).data("id");
+        const nombre = $(this).data("nombre");
+        confirmarEliminacionCategoria(id, nombre);
+    });
 });
 
 /**
@@ -108,6 +115,9 @@ function cargarCategorias() {
                             <td class="py-3 px-4 text-center">
                                 <button class="btn-editar text-green-600 hover:text-green-800 transition-colors" data-id="${categoria.id}" data-nombre="${escapeHtml(categoria.nombre)}" title="Editar">
                                     <i data-lucide="edit" class="w-4 h-4 inline-block"></i>
+                                </button>
+                                <button class="btn-eliminar text-red-600 hover:text-red-800 transition-colors ml-2" data-id="${categoria.id}" data-nombre="${escapeHtml(categoria.nombre)}" title="Eliminar">
+                                    <i data-lucide="trash-2" class="w-4 h-4 inline-block"></i>
                                 </button>
                             </td>
                         </tr>
@@ -362,5 +372,58 @@ function actualizarCategoria(id, nombre) {
         .fail((xhr) => {
             const errorMsg = xhr.responseJSON?.error || "Error de red al intentar actualizar.";
             mostrarError("Error del servidor", errorMsg);
+        });
+}
+
+/**
+ * Muestra el diálogo SweetAlert2 para confirmar la eliminación de una categoría
+ */
+function confirmarEliminacionCategoria(id, nombre) {
+    const theme = obtenerSwalTheme();
+
+    Swal.fire({
+        title: "Eliminar Categoría",
+        text: `¿Desea eliminar la categoría seleccionada?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Eliminar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        background: theme.background,
+        color: theme.color,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            eliminarCategoria(id);
+        }
+    });
+}
+
+/**
+ * Envía la petición AJAX con método DELETE para eliminar la categoría
+ */
+function eliminarCategoria(id) {
+    $.ajax({
+        url: `../../../../backend/api.php?accion=eliminar_categoria&id=${id}`,
+        type: "DELETE",
+        dataType: "json",
+    })
+        .done((response) => {
+            Swal.fire({
+                icon: "success",
+                title: "¡Eliminada!",
+                text: response.message || "Categoría eliminada correctamente.",
+                timer: 2000,
+                showConfirmButton: false,
+                ...obtenerSwalTheme(),
+            });
+
+            // Recargar la tabla
+            cargarCategorias();
+        })
+        .fail((xhr) => {
+            const errorMsg =
+                xhr.responseJSON?.message || xhr.responseJSON?.error || "Error de red al intentar eliminar.";
+            mostrarError("No se pudo eliminar la categoría", errorMsg);
         });
 }

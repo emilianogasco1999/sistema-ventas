@@ -84,3 +84,47 @@ function dbListarMetodosPagoPaginado($params = []) {
         'total_pages' => $totalPages
     ];
 }
+
+/**
+ * Busca un método de pago por su ID
+ * @param int $id
+ * @return array|null
+ */
+function dbBuscarMetodoPagoPorId($id) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("SELECT * FROM metodos_pago WHERE id = :id LIMIT 1");
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch() ?: null;
+}
+
+/**
+ * Busca un método de pago por su nombre excluyendo un ID específico
+ * @param string $nombre
+ * @param int $id
+ * @return array|null
+ */
+function dbBuscarMetodoPagoPorNombreExceptoId($nombre, $id) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("SELECT * FROM metodos_pago WHERE LOWER(nombre) = LOWER(:nombre) AND id <> :id LIMIT 1");
+    $stmt->execute([
+        'nombre' => $nombre,
+        'id' => $id
+    ]);
+    return $stmt->fetch() ?: null;
+}
+
+/**
+ * Actualiza el nombre de un método de pago
+ * @param int $id
+ * @param string $nombre
+ * @return bool
+ */
+function dbActualizarMetodoPago($id, $nombre) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("UPDATE metodos_pago SET nombre = :nombre WHERE id = :id");
+    return $stmt->execute([
+        'id' => $id,
+        'nombre' => $nombre
+    ]);
+}
+

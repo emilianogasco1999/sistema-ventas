@@ -112,3 +112,83 @@ function ctrlListarMetodosPago() {
     }
     exit;
 }
+
+/**
+ * Controlador para actualizar un método de pago
+ */
+function ctrlActualizarMetodoPago() {
+    verificarAdminAutenticado();
+
+    // Leer datos del request
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input) {
+        $input = $_POST;
+    }
+
+    $id = isset($input['id']) ? (int)$input['id'] : 0;
+    $nombre = trim($input['nombre'] ?? '');
+
+    // Validación: ID
+    if ($id <= 0) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'El método de pago seleccionado no existe.'
+        ]);
+        exit;
+    }
+
+    // Verificar si existe el método de pago
+    $metodo = dbBuscarMetodoPagoPorId($id);
+    if (!$metodo) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'El método de pago seleccionado no existe.'
+        ]);
+        exit;
+    }
+
+    // Validación: Obligatorio
+    if (empty($nombre)) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Debe ingresar un nombre para el método de pago.'
+        ]);
+        exit;
+    }
+
+    // Validación: Longitud (mínimo 3, máximo 50)
+    if (mb_strlen($nombre) < 3 || mb_strlen($nombre) > 50) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'El nombre debe tener entre 3 y 50 caracteres.'
+        ]);
+        exit;
+    }
+
+    // Validación: Unicidad (excepto el propio ID)
+    $metodoExistente = dbBuscarMetodoPagoPorNombreExceptoId($nombre, $id);
+    if ($metodoExistente) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Ya existe un método de pago con ese nombre.'
+        ]);
+        exit;
+    }
+
+    // Actualizar en la base de datos
+    $exito = dbActualizarMetodoPago($id, $nombre);
+
+    if ($exito) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Método de pago actualizado correctamente.'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'error' => 'No se pudo actualizar el método de pago en la base de datos o no se realizaron cambios.'
+        ]);
+    }
+    exit;
+}
+

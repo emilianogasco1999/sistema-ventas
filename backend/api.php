@@ -76,6 +76,11 @@ switch ($accion) {
         require_once __DIR__ . '/controllers/metodo_pago.php';
         ctrlListarMetodosPago();
         break;
+        
+    case 'editar_metodo_pago':
+        require_once __DIR__ . '/controllers/metodo_pago.php';
+        ctrlActualizarMetodoPago();
+        break;
     
     // Sucursales
     case 'crear_sucursal':

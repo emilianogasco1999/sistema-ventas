@@ -118,6 +118,11 @@ switch ($accion) {
         require_once __DIR__ . '/controllers/categorias.php';
         ctrlListarCategorias();
         break;
+        
+    case 'editar_categoria':
+        require_once __DIR__ . '/controllers/categorias.php';
+        ctrlActualizarCategoria();
+        break;
     
     // Fallback
     default:

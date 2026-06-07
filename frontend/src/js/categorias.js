@@ -37,6 +37,13 @@ $(document).ready(() => {
             cargarCategorias();
         }
     });
+
+    // Evento para abrir el modal de edición al hacer clic en el botón Editar
+    $("#tablaCategorias").on("click", ".btn-editar", function () {
+        const id = $(this).data("id");
+        const nombre = $(this).data("nombre");
+        abrirModalEdicion(id, nombre);
+    });
 });
 
 /**
@@ -47,7 +54,7 @@ function cargarCategorias() {
 
     $tabla.html(`
         <tr>
-            <td colspan="2" class="py-6 text-center text-gray-500">
+            <td colspan="3" class="py-6 text-center text-gray-500">
                 <div class="flex flex-col items-center gap-2">
                     <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
                     Cargando categorías...
@@ -83,7 +90,7 @@ function cargarCategorias() {
                 if (response.categorias.length === 0) {
                     $tabla.append(`
                         <tr>
-                            <td colspan="2" class="py-6 text-center text-gray-500">
+                            <td colspan="3" class="py-6 text-center text-gray-500">
                                 No existen categorías registradas en el sistema.
                             </td>
                         </tr>
@@ -98,6 +105,11 @@ function cargarCategorias() {
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="py-3 px-4 font-medium text-gray-800">${escapeHtml(categoria.nombre)}</td>
                             <td class="py-3 px-4 text-center text-gray-500">${categoria.id}</td>
+                            <td class="py-3 px-4 text-center">
+                                <button class="btn-editar text-green-600 hover:text-green-800 transition-colors" data-id="${categoria.id}" data-nombre="${escapeHtml(categoria.nombre)}" title="Editar">
+                                    <i data-lucide="edit" class="w-4 h-4 inline-block"></i>
+                                </button>
+                            </td>
                         </tr>
                     `);
                 });
@@ -261,4 +273,94 @@ function escapeHtml(text) {
         "'": "&#039;",
     };
     return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+/**
+ * Abre el modal de SweetAlert2 para editar una categoría
+ */
+function abrirModalEdicion(id, nombre) {
+    const isDark = $("body").hasClass("dark");
+    const theme = obtenerSwalTheme();
+
+    Swal.fire({
+        title: "Editar Categoría",
+        background: theme.background,
+        color: theme.color,
+        html: `
+            <div class="text-left py-2">
+                <div class="mb-4">
+                    <label for="swal-nombre" class="block text-sm font-semibold mb-1" style="color: ${isDark ? "#e5e7eb" : "#374151"} !important;">Nombre de la Categoría *</label>
+                    <input type="text" id="swal-nombre" 
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" 
+                           style="background-color: ${isDark ? "#111827" : "#ffffff"} !important; color: ${isDark ? "#ffffff" : "#111827"} !important; border-color: ${isDark ? "#374151" : "#d1d5db"} !important;"
+                           value="${escapeHtml(nombre)}" placeholder="Ej. Alimentos, Juguetes">
+                    <span id="swal-error-nombre" class="text-red-500 text-xs mt-1 hidden"></span>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "Guardar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#15803d",
+        cancelButtonColor: "#ef4444",
+        focusConfirm: false,
+        preConfirm: () => {
+            const nuevoNombre = document.getElementById("swal-nombre").value.trim();
+            const errorSpan = document.getElementById("swal-error-nombre");
+
+            errorSpan.classList.add("hidden");
+            errorSpan.textContent = "";
+
+            if (!nuevoNombre) {
+                errorSpan.textContent = "Debe ingresar un nombre para la categoría.";
+                errorSpan.classList.remove("hidden");
+                return false;
+            }
+            if (nuevoNombre.length < 3 || nuevoNombre.length > 100) {
+                errorSpan.textContent = "El nombre debe tener entre 3 y 100 caracteres.";
+                errorSpan.classList.remove("hidden");
+                return false;
+            }
+
+            return { nombre: nuevoNombre };
+        },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            actualizarCategoria(id, result.value.nombre);
+        }
+    });
+}
+
+/**
+ * Envía la petición AJAX para actualizar la categoría
+ */
+function actualizarCategoria(id, nombre) {
+    $.ajax({
+        url: "../../../../backend/api.php?accion=editar_categoria",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ id: id, nombre: nombre }),
+        dataType: "json",
+    })
+        .done((response) => {
+            if (response.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "¡Actualizada!",
+                    text: response.message || "Categoría actualizada correctamente.",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    ...obtenerSwalTheme(),
+                });
+
+                // Recargar la tabla manteniendo la página actual
+                cargarCategorias();
+            } else {
+                mostrarError("No se pudo actualizar la categoría", response.error);
+            }
+        })
+        .fail((xhr) => {
+            const errorMsg = xhr.responseJSON?.error || "Error de red al intentar actualizar.";
+            mostrarError("Error del servidor", errorMsg);
+        });
 }

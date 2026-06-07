@@ -84,3 +84,47 @@ function dbListarCategoriasPaginado($params = []) {
         'total_pages' => $totalPages
     ];
 }
+
+/**
+ * Busca una categoría por su ID
+ * @param int $id
+ * @return array|null
+ */
+function dbBuscarCategoriaPorId($id) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("SELECT * FROM categorias WHERE id = :id LIMIT 1");
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch() ?: null;
+}
+
+/**
+ * Busca una categoría por su nombre excluyendo un ID específico
+ * @param string $nombre
+ * @param int $id
+ * @return array|null
+ */
+function dbBuscarCategoriaPorNombreExceptoId($nombre, $id) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("SELECT * FROM categorias WHERE LOWER(nombre) = LOWER(:nombre) AND id <> :id LIMIT 1");
+    $stmt->execute([
+        'nombre' => $nombre,
+        'id' => $id
+    ]);
+    return $stmt->fetch() ?: null;
+}
+
+/**
+ * Actualiza el nombre de una categoría
+ * @param int $id
+ * @param string $nombre
+ * @return bool
+ */
+function dbActualizarCategoria($id, $nombre) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("UPDATE categorias SET nombre = :nombre WHERE id = :id");
+    return $stmt->execute([
+        'id' => $id,
+        'nombre' => $nombre
+    ]);
+}
+

@@ -2,9 +2,17 @@
  * Métodos de Pago Management Logic - Forrajería
  */
 
+// Estado global para la paginación de métodos de pago
+const estado = {
+    page: 1,
+    per_page: 8
+};
+
 $(document).ready(() => {
     // Inicializar iconos Lucide
-    lucide.createIcons();
+    if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+    }
 
     // Cargar la lista inicial de métodos de pago
     cargarMetodosPago();
@@ -20,27 +28,60 @@ $(document).ready(() => {
             guardarMetodoPago(validator);
         }
     });
+
+    // Evento de paginación al hacer clic en los botones
+    $("#paginas").on("click", "button[data-page]", function () {
+        const newPage = parseInt($(this).data("page"));
+        if (!isNaN(newPage) && newPage > 0) {
+            estado.page = newPage;
+            cargarMetodosPago();
+        }
+    });
 });
 
 /**
- * Carga todos los métodos de pago desde el backend
+ * Carga todos los métodos de pago desde el backend aplicando paginación
  */
 function cargarMetodosPago() {
     const $tabla = $("#tablaMetodosPago");
 
-    $.get("../../../../backend/api.php?accion=listar_metodos_pago")
-        .done((response) => {
-            if (response.success) {
+    $tabla.html(`
+        <tr>
+            <td colspan="2" class="py-6 text-center text-gray-500">
+                <div class="flex flex-col items-center gap-2">
+                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-green-600"></i>
+                    Cargando métodos de pago...
+                </div>
+            </td>
+        </tr>
+    `);
+    
+    if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+    }
+
+    $.ajax({
+        url: "../../../../backend/api.php",
+        type: "GET",
+        data: {
+            accion: "listar_metodos_pago",
+            page: estado.page,
+            per_page: estado.per_page
+        },
+        success: (response) => {
+            if (response.success && response.metodos) {
                 $tabla.empty();
 
                 if (response.metodos.length === 0) {
                     $tabla.append(`
                         <tr>
                             <td colspan="2" class="py-6 text-center text-gray-500">
-                                No hay métodos de pago registrados en el sistema.
+                                No existen métodos de pago registrados.
                             </td>
                         </tr>
                     `);
+                    $("#infoRegistros").text("No hay registros");
+                    $("#paginas").empty();
                     return;
                 }
 
@@ -53,16 +94,82 @@ function cargarMetodosPago() {
                     `);
                 });
 
-                // Re-inicializar iconos Lucide si inyectamos nuevos en la tabla
-                lucide.createIcons();
+                renderizarPaginacion(response.pagination);
             } else {
                 mostrarError("Error al cargar métodos de pago", response.error);
             }
-        })
-        .fail((xhr) => {
+        },
+        error: (xhr) => {
             const errorMsg = xhr.responseJSON?.error || "Error de red al conectar con el servidor.";
             mostrarError("Error al cargar métodos de pago", errorMsg);
-        });
+        }
+    });
+}
+
+/**
+ * Renderiza dinámicamente los botones de control de paginación
+ */
+function renderizarPaginacion(pagination) {
+    if (!pagination) return;
+
+    const $infoRegistros = $("#infoRegistros");
+    const $paginas = $("#paginas");
+
+    const { total, page, per_page, total_pages } = pagination;
+    const inicio = (page - 1) * per_page + 1;
+    const fin = Math.min(page * per_page, total);
+
+    if (total === 0) {
+        $infoRegistros.text("No hay registros");
+    } else {
+        $infoRegistros.text(`Mostrando ${inicio}-${fin} de ${total} registros`);
+    }
+
+    $paginas.empty();
+
+    if (total_pages <= 1) {
+        return;
+    }
+
+    const maxBotones = 5;
+    let startPage = Math.max(1, page - Math.floor(maxBotones / 2));
+    const endPage = Math.min(total_pages, startPage + maxBotones - 1);
+
+    if (endPage - startPage < maxBotones - 1) {
+        startPage = Math.max(1, endPage - maxBotones + 1);
+    }
+
+    // Botón Anterior
+    const prevDisabled = page <= 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-green-100";
+    $paginas.append(`
+        <button class="px-3 py-1 rounded border border-gray-300 text-sm ${prevDisabled}" data-page="${page - 1}" ${page <= 1 ? "disabled" : ""}>
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
+    `);
+
+    // Páginas numéricas
+    for (let i = startPage; i <= endPage; i++) {
+        const activeClass = i === page
+            ? "bg-green-600 text-white border-green-600"
+            : "border-gray-300 hover:bg-green-100";
+        $paginas.append(`
+            <button class="px-3 py-1 rounded border text-sm ${activeClass}" data-page="${i}">
+                ${i}
+            </button>
+        `);
+    }
+
+    // Botón Siguiente
+    const nextDisabled = page >= total_pages ? "opacity-50 cursor-not-allowed" : "hover:bg-green-100";
+    $paginas.append(`
+        <button class="px-3 py-1 rounded border border-gray-300 text-sm ${nextDisabled}" data-page="${page + 1}" ${page >= total_pages ? "disabled" : ""}>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+    `);
+
+    if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+    }
 }
 
 /**
@@ -93,7 +200,8 @@ function guardarMetodoPago(validator) {
                 $("#nombre").val("");
                 validator.clearAllErrors();
 
-                // Recargar la tabla
+                // Forzar ir a la primera página al guardar para ver el nuevo registro en orden alfabético
+                estado.page = 1;
                 cargarMetodosPago();
             } else {
                 mostrarError("No se pudo crear el método de pago", response.error);

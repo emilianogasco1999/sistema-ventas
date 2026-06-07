@@ -79,19 +79,36 @@ function ctrlCrearMetodoPago() {
         ]);
     }
     exit;
-}
-
-/**
- * Controlador para listar los métodos de pago
+}/**
+ * Controlador para listar los métodos de pago (con soporte opcional de paginación)
  */
 function ctrlListarMetodosPago() {
     verificarAdminAutenticado();
 
-    $metodos = dbListarMetodosPago();
+    $params = [
+        'page' => isset($_GET['page']) ? (int)$_GET['page'] : null,
+        'per_page' => isset($_GET['per_page']) ? (int)$_GET['per_page'] : 8,
+        'paginar' => isset($_GET['page'])
+    ];
 
-    echo json_encode([
-        'success' => true,
-        'metodos' => $metodos
-    ]);
+    if ($params['paginar']) {
+        $resultado = dbListarMetodosPagoPaginado($params);
+        echo json_encode([
+            'success' => true,
+            'metodos' => $resultado['data'],
+            'pagination' => [
+                'total' => $resultado['total'],
+                'page' => $resultado['page'],
+                'per_page' => $resultado['per_page'],
+                'total_pages' => $resultado['total_pages']
+            ]
+        ]);
+    } else {
+        $metodos = dbListarMetodosPago();
+        echo json_encode([
+            'success' => true,
+            'metodos' => $metodos
+        ]);
+    }
     exit;
 }

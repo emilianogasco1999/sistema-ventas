@@ -34,6 +34,53 @@ function dbInsertarMetodoPago($nombre) {
  */
 function dbListarMetodosPago() {
     $db = obtenerConexion();
-    $stmt = $db->query("SELECT * FROM metodos_pago ORDER BY id DESC");
+    $stmt = $db->query("SELECT * FROM metodos_pago ORDER BY nombre ASC");
     return $stmt->fetchAll();
+}
+
+/**
+ * Obtiene el listado de métodos de pago con paginación
+ * @param array $params Parámetros de paginación
+ * @return array
+ */
+function dbListarMetodosPagoPaginado($params = []) {
+    $db = obtenerConexion();
+    
+    $paginar = isset($params['paginar']) ? ($params['paginar'] === true || $params['paginar'] === 'true' || $params['paginar'] == 1) : true;
+    
+    $page = max(1, intval($params['page'] ?? 1));
+    $perPage = min(100, max(1, intval($params['per_page'] ?? 8)));
+    $offset = ($page - 1) * $perPage;
+    
+    $sort = 'nombre';
+    $order = 'ASC';
+    
+    // Contar total
+    $stmtCount = $db->query("SELECT COUNT(*) FROM metodos_pago");
+    $total = (int)$stmtCount->fetchColumn();
+    
+    // Obtener datos
+    $sql = "SELECT id, nombre FROM metodos_pago ORDER BY $sort $order";
+    if ($paginar) {
+        $sql .= " LIMIT :limit OFFSET :offset";
+    }
+    
+    $stmt = $db->prepare($sql);
+    if ($paginar) {
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    }
+    
+    $stmt->execute();
+    $data = $stmt->fetchAll();
+    
+    $totalPages = $paginar && $total > 0 ? ceil($total / $perPage) : 1;
+    
+    return [
+        'data' => $data,
+        'total' => $total,
+        'page' => $page,
+        'per_page' => $perPage,
+        'total_pages' => $totalPages
+    ];
 }

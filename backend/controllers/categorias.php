@@ -114,3 +114,83 @@ function ctrlListarCategorias() {
     }
     exit;
 }
+
+/**
+ * Controlador para actualizar una categoría
+ */
+function ctrlActualizarCategoria() {
+    verificarAdminAutenticado();
+
+    // Leer datos del request
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input) {
+        $input = $_POST;
+    }
+
+    $id = isset($input['id']) ? intval($input['id']) : 0;
+    $nombre = trim($input['nombre'] ?? '');
+
+    // Validación: ID válido
+    if ($id <= 0) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'ID de categoría no válido.'
+        ]);
+        exit;
+    }
+
+    // Verificar si la categoría existe
+    $categoriaActual = dbBuscarCategoriaPorId($id);
+    if (!$categoriaActual) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'La categoría no existe.'
+        ]);
+        exit;
+    }
+
+    // Validación: Obligatorio
+    if (empty($nombre)) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Debe ingresar un nombre para la categoría.'
+        ]);
+        exit;
+    }
+
+    // Validación: Longitud (mínimo 3, máximo 100 por consistencia con la DB)
+    if (mb_strlen($nombre) < 3 || mb_strlen($nombre) > 100) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'El nombre debe tener entre 3 y 100 caracteres.'
+        ]);
+        exit;
+    }
+
+    // Validación: Unicidad (insensible a mayúsculas/minúsculas, exceptuando el ID actual)
+    $categoriaExistente = dbBuscarCategoriaPorNombreExceptoId($nombre, $id);
+    if ($categoriaExistente) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Ya existe una categoría con ese nombre.'
+        ]);
+        exit;
+    }
+
+    // Guardar cambios
+    $exito = dbActualizarCategoria($id, $nombre);
+
+    if ($exito) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Categoría actualizada correctamente.'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'error' => 'No se pudieron guardar los cambios en la base de datos.'
+        ]);
+    }
+    exit;
+}
+

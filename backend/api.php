@@ -66,6 +66,17 @@ switch ($accion) {
         ctrlEliminarRol();
         break;
     
+    // Métodos de Pago
+    case 'crear_metodo_pago':
+        require_once __DIR__ . '/controllers/metodo_pago.php';
+        ctrlCrearMetodoPago();
+        break;
+        
+    case 'listar_metodos_pago':
+        require_once __DIR__ . '/controllers/metodo_pago.php';
+        ctrlListarMetodosPago();
+        break;
+    
     // Sucursales
     case 'crear_sucursal':
         require_once __DIR__ . '/controllers/sucursal.php';

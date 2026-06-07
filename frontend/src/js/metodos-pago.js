@@ -44,6 +44,13 @@ $(document).ready(() => {
         const nombre = $(this).data("nombre");
         abrirModalEdicion(id, nombre);
     });
+
+    // Manejar el clic en el botón de eliminar (Abre confirmación)
+    $(document).on("click", ".btn-eliminar-metodo", function () {
+        const id = $(this).data("id");
+        const nombre = $(this).data("nombre");
+        confirmarEliminacionMetodo(id, nombre);
+    });
 });
 
 /**
@@ -79,6 +86,15 @@ function cargarMetodosPago() {
             if (response.success && response.metodos) {
                 $tabla.empty();
 
+                // Si la página actual está vacía pero no es la primera,
+                // significa que borramos todos los registros de esta página.
+                // Retrocedemos de página y volvemos a intentar cargar.
+                if (response.metodos.length === 0 && estado.page > 1) {
+                    estado.page--;
+                    cargarMetodosPago();
+                    return;
+                }
+
                 if (response.metodos.length === 0) {
                     $tabla.append(`
                         <tr>
@@ -104,10 +120,20 @@ function cargarMetodosPago() {
                                         title="Editar Método de Pago">
                                     <i data-lucide="pencil" class="w-4 h-4"></i>
                                 </button>
+                                <button class="btn-eliminar-metodo text-red-600 hover:text-red-800 transition-colors p-1" 
+                                        data-id="${metodo.id}" 
+                                        data-nombre="${escapeHtml(metodo.nombre)}"
+                                        title="Eliminar Método de Pago">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
                             </td>
                         </tr>
                     `);
                 });
+
+                if (typeof lucide !== "undefined") {
+                    lucide.createIcons();
+                }
 
                 renderizarPaginacion(response.pagination);
             } else {
@@ -319,6 +345,64 @@ function actualizarMetodoPago(id, nombre) {
         })
         .fail((xhr) => {
             const errorMsg = xhr.responseJSON?.error || "Error de red al intentar actualizar.";
+            mostrarError("Error del servidor", errorMsg);
+        });
+}
+
+/**
+ * Muestra el diálogo SweetAlert2 para confirmar la eliminación de un método de pago
+ */
+function confirmarEliminacionMetodo(id, nombre) {
+    const theme = obtenerSwalTheme();
+
+    Swal.fire({
+        title: "¿Desea eliminar el método de pago seleccionado?",
+        text: `Vas a eliminar el método de pago "${nombre}".`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        background: theme.background,
+        color: theme.color,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            eliminarMetodoPago(id);
+        }
+    });
+}
+
+/**
+ * Envía la petición AJAX para eliminar el método de pago
+ */
+function eliminarMetodoPago(id) {
+    $.ajax({
+        url: "../../../../backend/api.php?accion=eliminar_metodo_pago",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ id: id }),
+        dataType: "json",
+    })
+        .done((response) => {
+            if (response.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "¡Eliminado!",
+                    text: response.message || "Método de pago eliminado correctamente.",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    ...obtenerSwalTheme(),
+                });
+
+                // Recargar la tabla
+                cargarMetodosPago();
+            } else {
+                mostrarError("No se pudo eliminar", response.error);
+            }
+        })
+        .fail((xhr) => {
+            const errorMsg = xhr.responseJSON?.error || "Error de red al intentar eliminar.";
             mostrarError("Error del servidor", errorMsg);
         });
 }

@@ -192,3 +192,60 @@ function ctrlActualizarMetodoPago() {
     exit;
 }
 
+/**
+ * Controlador para eliminar un método de pago
+ */
+function ctrlEliminarMetodoPago() {
+    verificarAdminAutenticado();
+
+    // Leer el ID desde la query string o del cuerpo de la petición
+    $input = json_decode(file_get_contents('php://input'), true);
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : (isset($input['id']) ? (int)$input['id'] : 0);
+
+    // Validación de ID
+    if ($id <= 0) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'El método de pago seleccionado no existe.'
+        ]);
+        exit;
+    }
+
+    // Verificar si el método de pago existe
+    $metodo = dbBuscarMetodoPagoPorId($id);
+    if (!$metodo) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'El método de pago seleccionado no existe.'
+        ]);
+        exit;
+    }
+
+    // Verificar si tiene pagos asociados
+    $cantPagos = dbContarPagosPorMetodoPago($id);
+    if ($cantPagos > 0) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'No es posible eliminar el método de pago porque posee operaciones asociadas.'
+        ]);
+        exit;
+    }
+
+    // Eliminar físicamente
+    $exito = dbEliminarMetodoPago($id);
+
+    if ($exito) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Método de pago eliminado correctamente.'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'error' => 'No se pudo eliminar el método de pago.'
+        ]);
+    }
+    exit;
+}
+
+

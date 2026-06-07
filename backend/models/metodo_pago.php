@@ -128,3 +128,26 @@ function dbActualizarMetodoPago($id, $nombre) {
     ]);
 }
 
+/**
+ * Cuenta la cantidad de pagos asociados a un método de pago específico
+ * @param int $metodoPagoId
+ * @return int
+ */
+function dbContarPagosPorMetodoPago($metodoPagoId) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("SELECT COUNT(*) FROM venta_pagos WHERE metodo_pago_id = :metodo_pago_id");
+    $stmt->execute(['metodo_pago_id' => $metodoPagoId]);
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * Elimina un método de pago físicamente de la base de datos
+ * @param int $id
+ * @return bool
+ */
+function dbEliminarMetodoPago($id) {
+    $db = obtenerConexion();
+    $stmt = $db->prepare("DELETE FROM metodos_pago WHERE id = :id");
+    return $stmt->execute(['id' => $id]);
+}
+

@@ -160,6 +160,6 @@ require_once __DIR__ . '/../../componentes/header.php';
     <script src="../../../assets/js/dark-mode-toggle.js"></script>
     <script src="../../../assets/js/responsive-sidebar.js"></script>
     <script src="../../js/validation.js"></script>
-    <script src="../../js/metodos-pago.js"></script>
+    <script src="../../js/metodos-pago.js?v=<?= time(); ?>"></script>
 </body>
 </html>
